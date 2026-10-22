@@ -10,6 +10,30 @@
     <h1>Super Admin Dashboard</h1>
     <p>Welcome to the administration panel.</p>
 
+    <hr>
+
+<h3>Management</h3>
+
+<p>
+    <a href="{{ route('admin.customers.index') }}">
+        Customer Management
+    </a>
+</p>
+
+<p>
+    <a href="{{ route('admin.roles.index') }}">
+        Role Management
+    </a>
+</p>
+
+<p>
+    <a href="{{ route('admin.admins.index') }}">
+        Admin Management
+    </a>
+</p>
+
+<hr>
+
     <form method="POST" action="{{ route('admin.logout') }}">
         @csrf
         <button type="submit">Logout</button>

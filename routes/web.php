@@ -122,6 +122,22 @@ Route::middleware(['auth', 'superadmin'])
             ->name('destroy');
     });
 
+    
+Route::middleware(['auth', 'superadmin'])
+    ->prefix('admins')
+    ->name('admins.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\AdminController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\AdminController::class, 'store'])->name('store');
+        Route::get('/trash', [\App\Http\Controllers\Admin\AdminController::class, 'trash'])->name('trash');
+        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\AdminController::class, 'restore'])->name('restore');
+        Route::get('/{admin}/edit', [\App\Http\Controllers\Admin\AdminController::class, 'edit'])->name('edit');
+        Route::put('/{admin}', [\App\Http\Controllers\Admin\AdminController::class, 'update'])->name('update');
+        Route::delete('/{admin}', [\App\Http\Controllers\Admin\AdminController::class, 'destroy'])->name('destroy');
+    });
+
+
 
 });
 
