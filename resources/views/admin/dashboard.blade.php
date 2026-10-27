@@ -1,42 +1,53 @@
+@extends('admin.layouts.app')
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Admin Dashboard</title>
-</head>
-<body>
-    <h1>Super Admin Dashboard</h1>
-    <p>Welcome to the administration panel.</p>
+@section('title', 'Super Admin Dashboard')
+@section('heading', 'Dashboard')
 
-    <hr>
+@section('content')
 
-<h3>Management</h3>
+    <div class="page-heading">
+        <h1>Welcome Back!</h1>
+        <p>Manage your application and administrative activities.</p>
+    </div>
 
-<p>
-    <a href="{{ route('admin.customers.index') }}">
-        Customer Management
-    </a>
-</p>
+    <div class="stats-grid">
 
-<p>
-    <a href="{{ route('admin.roles.index') }}">
-        Role Management
-    </a>
-</p>
+        <div class="stat-card">
+            <p>Customer Management</p>
+            <h3>Customers</h3>
+            <br>
+            <a href="{{ route('admin.customers.index') }}" class="btn">
+                View Customers
+            </a>
+        </div>
 
-<p>
-    <a href="{{ route('admin.admins.index') }}">
-        Admin Management
-    </a>
-</p>
+        <div class="stat-card">
+            <p>Role Management</p>
+            <h3>Roles</h3>
+            <br>
+            <a href="{{ route('admin.roles.index') }}" class="btn">
+                Manage Roles
+            </a>
+        </div>
 
-<hr>
+        <div class="stat-card">
+            <p>Admin Management</p>
+            <h3>Admins</h3>
+            <br>
+            <a href="{{ route('admin.admins.index') }}" class="btn">
+                Manage Admins
+            </a>
+        </div>
 
-    <form method="POST" action="{{ route('admin.logout') }}">
-        @csrf
-        <button type="submit">Logout</button>
-    </form>
-</body>
-</html>
+    </div>
+
+    <div class="content-card">
+        <h3>Administration Overview</h3>
+        <br>
+        <p>
+            Use the sidebar or the cards above to manage customers,
+            roles, and admin accounts.
+        </p>
+    </div>
+
+@endsection
