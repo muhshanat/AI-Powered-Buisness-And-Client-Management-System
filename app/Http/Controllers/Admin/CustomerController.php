@@ -3,13 +3,30 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
 {
+    // Record an activity
+    private function logActivity($action, $description)
+    {
+        $user = Auth::user();
+
+        ActivityLog::create([
+            'user_id' => $user?->id,
+            'user_name' => $user?->name ?? 'Unknown User',
+            'action' => $action,
+            'module' => 'Customers',
+            'description' => $description,
+            'ip_address' => request()->ip(),
+        ]);
+    }
+
     // Show all customers
     public function index()
     {
@@ -41,6 +58,11 @@ class CustomerController extends Controller
         $customer->password = Hash::make($validated['password']);
         $customer->role = 'customer';
         $customer->save();
+
+        $this->logActivity(
+            'Created',
+            'Added customer: ' . $customer->name . ' (' . $customer->email . ')'
+        );
 
         return redirect()
             ->route('admin.customers.index')
@@ -74,6 +96,11 @@ class CustomerController extends Controller
         $customer->email = $validated['email'];
         $customer->save();
 
+        $this->logActivity(
+            'Updated',
+            'Updated customer: ' . $customer->name . ' (' . $customer->email . ')'
+        );
+
         return redirect()
             ->route('admin.customers.index')
             ->with('success', 'Customer updated successfully.');
@@ -84,14 +111,21 @@ class CustomerController extends Controller
     {
         abort_unless($customer->role === 'customer', 404);
 
+        $customerName = $customer->name;
+        $customerEmail = $customer->email;
+
         $customer->delete();
+
+        $this->logActivity(
+            'Deleted',
+            'Moved customer to Trash: ' . $customerName . ' (' . $customerEmail . ')'
+        );
 
         return redirect()
             ->route('admin.customers.index')
             ->with('success', 'Customer moved to Trash.');
     }
 
-    
     // Show deleted customers
     public function trash()
     {
@@ -110,11 +144,18 @@ class CustomerController extends Controller
             ->where('role', 'customer')
             ->findOrFail($id);
 
+        $customerName = $customer->name;
+        $customerEmail = $customer->email;
+
         $customer->restore();
+
+        $this->logActivity(
+            'Restored',
+            'Restored customer: ' . $customerName . ' (' . $customerEmail . ')'
+        );
 
         return redirect()
             ->route('admin.customers.trash')
             ->with('success', 'Customer restored successfully.');
     }
-
 }

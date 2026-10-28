@@ -1,131 +1,94 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Management</title>
+@extends('admin.layouts.app')
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            padding: 30px;
-        }
+@section('title', 'Customer Management')
+@section('heading', 'Customer Management')
 
-        .container {
-            max-width: 1000px;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-        }
+@section('content')
 
-        .top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+    <div class="page-heading">
+        <h1>Customer Management</h1>
+        <p>View, update, and manage customer accounts.</p>
+    </div>
 
-        .btn {
-            display: inline-block;
-            padding: 10px 15px;
-            background: #243447;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
+   @if (session('success'))
+    <div class="alert-success">
+        {{ session('success') }}
+    </div>
+@endif
 
-        .success {
-            background: #dcfce7;
-            color: #166534;
-            padding: 12px;
-            margin-top: 15px;
-            border-radius: 5px;
-        }
+    @if ($errors->any())
+        <div class="alert-error">
+            {{ $errors->first() }}
+        </div>
+    @endif
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
+    <div class="content-card">
 
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
+        <div class="action-links" style="margin-bottom: 20px;">
+            <a href="{{ route('admin.customers.create') }}" class="btn">
+                + Add New Customer
+            </a>
 
-        th {
-            background: #243447;
-            color: white;
-        }
-    </style>
-</head>
+            <a href="{{ route('admin.customers.trash') }}"
+               class="btn btn-secondary">
+                View Trash
+            </a>
 
-<body>
-    <div class="container">
-        <div class="top">
-            <h1>Customer Management</h1>
-
-            <a class="btn" href="{{ route('admin.customers.create') }}">
-                + Add Customer
+            <a href="{{ route('admin.dashboard') }}"
+               class="btn btn-secondary">
+                Back to Dashboard
             </a>
         </div>
 
-        <a href="{{ route('admin.dashboard') }}">Back to Dashboard</a>
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
 
-        @if (session('success'))
-            <div class="success">{{ session('success') }}</div>
-        @endif
+                <tbody>
+                    @forelse ($customers as $customer)
+                        <tr>
+                            <td>{{ $customer->id }}</td>
+                            <td>{{ $customer->name }}</td>
+                            <td>{{ $customer->email }}</td>
+                            <td>
+                                <div class="action-links">
+                                    <a href="{{ route('admin.customers.edit', $customer->id) }}"
+                                       class="btn">
+                                        Edit
+                                    </a>
 
-        <table>
-           
-<thead>
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Registered At</th>
-        <th>Actions</th>
-    </tr>
-</thead>
+                                    <form
+                                        action="{{ route('admin.customers.destroy', $customer->id) }}"
+                                        method="POST"
+                                        onsubmit="return confirm('Move this customer to Trash?')"
+                                    >
+                                        @csrf
+                                        @method('DELETE')
 
+                                        <button type="submit" class="btn btn-danger">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4">No customers found.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
-            <tbody>
-               
-@forelse ($customers as $customer)
-    <tr>
-        <td>{{ $customer->id }}</td>
-        <td>{{ $customer->name }}</td>
-        <td>{{ $customer->email }}</td>
-        <td>{{ $customer->created_at?->format('d M Y') ?? 'N/A' }}</td>
-        <td>
-            <a href="{{ route('admin.customers.edit', $customer) }}">
-                Edit
-            </a>
-
-            <form action="{{ route('admin.customers.destroy', $customer) }}"
-                  method="POST"
-                  style="display:inline;"
-                  onsubmit="return confirm('Are you sure you want to move this customer to Trash?');">
-                @csrf
-                @method('DELETE')
-
-                <button type="submit">Delete</button>
-            </form>
-        </td>
-    </tr>
-@empty
-    <tr>
-        <td colspan="5">No customers found.</td>
-    </tr>
-@endforelse
-
-            </tbody>
-        </table>
     </div>
-</body>
-</html>
+
+@endsection

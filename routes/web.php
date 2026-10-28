@@ -4,6 +4,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\Auth\AdminLoginController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,9 +27,8 @@ Route::middleware('auth')->group(function () {
         ->name('profile.destroy');
 });
 
-// Super Admin routes
+// Admin login and logout
 Route::prefix('admin')->name('admin.')->group(function () {
-
     Route::get('/login', [AdminLoginController::class, 'showLoginForm'])
         ->name('login');
 
@@ -37,108 +38,91 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/logout', [AdminLoginController::class, 'logout'])
         ->name('logout');
 
+    // Super Admin dashboard only
     Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->middleware(['auth', 'superadmin'])->name('dashboard');
+    return view('admin.dashboard');
+})->middleware('auth')->name('dashboard');
 
-    
     // Customer Management
-    Route::middleware(['auth', 'superadmin'])
-        ->prefix('customers')
-        ->name('customers.')
-        ->group(function () {
-            Route::get('/', [
-                \App\Http\Controllers\Admin\CustomerController::class,
-                'index'
-            ])->name('index');
+    Route::prefix('customers')->name('customers.')->middleware('auth')->group(function () {
+        Route::get('/', [CustomerController::class, 'index'])
+            ->middleware('permission:customers.view')->name('index');
 
-            Route::get('/create', [
-                \App\Http\Controllers\Admin\CustomerController::class,
-                'create'
-            ])->name('create');
+        Route::get('/create', [CustomerController::class, 'create'])
+            ->middleware('permission:customers.create')->name('create');
 
-            Route::post('/', [
-                \App\Http\Controllers\Admin\CustomerController::class,
-                'store'
-            ])->name('store');
+        Route::post('/', [CustomerController::class, 'store'])
+            ->middleware('permission:customers.create')->name('store');
 
-            Route::get('/{customer}/edit', [
-                \App\Http\Controllers\Admin\CustomerController::class,
-                'edit'
-            ])->name('edit');
+        Route::get('/trash', [CustomerController::class, 'trash'])
+            ->middleware('permission:customers.delete')->name('trash');
 
-            Route::put('/{customer}', [
-                \App\Http\Controllers\Admin\CustomerController::class,
-                'update'
-            ])->name('update');
+        Route::post('/{id}/restore', [CustomerController::class, 'restore'])
+            ->middleware('permission:customers.delete')->name('restore');
 
-            Route::delete('/{customer}', [
-                \App\Http\Controllers\Admin\CustomerController::class,
-                'destroy'
-            ])->name('destroy');
+        Route::get('/{customer}/edit', [CustomerController::class, 'edit'])
+            ->middleware('permission:customers.edit')->name('edit');
 
-            
-            Route::get('/trash', [
-                \App\Http\Controllers\Admin\CustomerController::class,
-                'trash'
-            ])->name('trash');
+        Route::put('/{customer}', [CustomerController::class, 'update'])
+            ->middleware('permission:customers.edit')->name('update');
 
-            Route::post('/{id}/restore', [
-                \App\Http\Controllers\Admin\CustomerController::class,
-                'restore'
-            ])->name('restore');
-
-            
-
-        });
-
-        
-Route::middleware(['auth', 'superadmin'])
-    ->prefix('roles')
-    ->name('roles.')
-    ->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\RoleController::class, 'index'])
-            ->name('index');
-
-        Route::get('/create', [\App\Http\Controllers\Admin\RoleController::class, 'create'])
-            ->name('create');
-
-        Route::post('/', [\App\Http\Controllers\Admin\RoleController::class, 'store'])
-            ->name('store');
-
-        Route::get('/trash', [\App\Http\Controllers\Admin\RoleController::class, 'trash'])
-            ->name('trash');
-
-        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\RoleController::class, 'restore'])
-            ->name('restore');
-
-        Route::get('/{role}/edit', [\App\Http\Controllers\Admin\RoleController::class, 'edit'])
-            ->name('edit');
-
-        Route::put('/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'update'])
-            ->name('update');
-
-        Route::delete('/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])
-            ->name('destroy');
+        Route::delete('/{customer}', [CustomerController::class, 'destroy'])
+            ->middleware('permission:customers.delete')->name('destroy');
     });
 
-    
-Route::middleware(['auth', 'superadmin'])
-    ->prefix('admins')
-    ->name('admins.')
-    ->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\Admin\AdminController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\Admin\AdminController::class, 'store'])->name('store');
-        Route::get('/trash', [\App\Http\Controllers\Admin\AdminController::class, 'trash'])->name('trash');
-        Route::post('/{id}/restore', [\App\Http\Controllers\Admin\AdminController::class, 'restore'])->name('restore');
-        Route::get('/{admin}/edit', [\App\Http\Controllers\Admin\AdminController::class, 'edit'])->name('edit');
-        Route::put('/{admin}', [\App\Http\Controllers\Admin\AdminController::class, 'update'])->name('update');
-        Route::delete('/{admin}', [\App\Http\Controllers\Admin\AdminController::class, 'destroy'])->name('destroy');
+    // Role Management
+    Route::prefix('roles')->name('roles.')->middleware('auth')->group(function () {
+        Route::get('/', [RoleController::class, 'index'])
+            ->middleware('permission:roles.view')->name('index');
+
+        Route::get('/create', [RoleController::class, 'create'])
+            ->middleware('permission:roles.create')->name('create');
+
+        Route::post('/', [RoleController::class, 'store'])
+            ->middleware('permission:roles.create')->name('store');
+
+        Route::get('/trash', [RoleController::class, 'trash'])
+            ->middleware('permission:roles.delete')->name('trash');
+
+        Route::post('/{id}/restore', [RoleController::class, 'restore'])
+            ->middleware('permission:roles.delete')->name('restore');
+
+        Route::get('/{role}/edit', [RoleController::class, 'edit'])
+            ->middleware('permission:roles.edit')->name('edit');
+
+        Route::put('/{role}', [RoleController::class, 'update'])
+            ->middleware('permission:roles.edit')->name('update');
+
+        Route::delete('/{role}', [RoleController::class, 'destroy'])
+            ->middleware('permission:roles.delete')->name('destroy');
     });
 
+    // Admin Management
+    Route::prefix('admins')->name('admins.')->middleware('auth')->group(function () {
+        Route::get('/', [AdminController::class, 'index'])
+            ->middleware('permission:admins.view')->name('index');
 
+        Route::get('/create', [AdminController::class, 'create'])
+            ->middleware('permission:admins.create')->name('create');
 
+        Route::post('/', [AdminController::class, 'store'])
+            ->middleware('permission:admins.create')->name('store');
+
+        Route::get('/trash', [AdminController::class, 'trash'])
+            ->middleware('permission:admins.delete')->name('trash');
+
+        Route::post('/{id}/restore', [AdminController::class, 'restore'])
+            ->middleware('permission:admins.delete')->name('restore');
+
+        Route::get('/{admin}/edit', [AdminController::class, 'edit'])
+            ->middleware('permission:admins.edit')->name('edit');
+
+        Route::put('/{admin}', [AdminController::class, 'update'])
+            ->middleware('permission:admins.edit')->name('update');
+
+        Route::delete('/{admin}', [AdminController::class, 'destroy'])
+            ->middleware('permission:admins.delete')->name('destroy');
+    });
 });
 
 require __DIR__.'/auth.php';

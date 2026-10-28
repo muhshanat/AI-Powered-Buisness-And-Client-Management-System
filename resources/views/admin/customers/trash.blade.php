@@ -1,55 +1,80 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Deleted Customers</title>
-</head>
-<body>
-    <h1>Customer Trash</h1>
+@extends('admin.layouts.app')
 
-    <a href="{{ route('admin.customers.index') }}">
-        Back to Customers
-    </a>
+@section('title', 'Customer Trash')
+@section('heading', 'Customer Trash')
+
+@section('content')
+
+    <div class="page-heading">
+        <h1>Deleted Customers</h1>
+        <p>View and restore customer accounts that have been moved to Trash.</p>
+    </div>
 
     @if (session('success'))
-        <p style="color: green;">{{ session('success') }}</p>
+    <div class="alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+    
+
+    @if ($errors->any())
+        <div class="alert-error">
+            {{ $errors->first() }}
+        </div>
     @endif
 
-    <table border="1" cellpadding="10">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Deleted At</th>
-                <th>Action</th>
-            </tr>
-        </thead>
+    <div class="content-card">
 
-        <tbody>
-            @forelse ($customers as $customer)
-                <tr>
-                    <td>{{ $customer->id }}</td>
-                    <td>{{ $customer->name }}</td>
-                    <td>{{ $customer->email }}</td>
-                    <td>{{ $customer->deleted_at?->format('d M Y H:i') }}</td>
-                    <td>
-                        <form
-                            action="{{ route('admin.customers.restore', $customer->id) }}"
-                            method="POST"
-                        >
-                            @csrf
-                            <button type="submit">Restore</button>
-                        </form>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="5">No deleted customers found.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</body>
-</html>
+        <div class="action-links" style="margin-bottom: 20px;">
+            <a href="{{ route('admin.customers.index') }}"
+               class="btn btn-secondary">
+                Back to Customer Management
+            </a>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Deleted At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse ($customers as $customer)
+                        <tr>
+                            <td>{{ $customer->id }}</td>
+                            <td>{{ $customer->name }}</td>
+                            <td>{{ $customer->email }}</td>
+                            <td>{{ $customer->deleted_at }}</td>
+                            <td>
+                                <form
+                                    action="{{ route('admin.customers.restore', $customer->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Restore this customer?')"
+                                >
+                                    @csrf
+
+                                    <button type="submit" class="btn">
+                                        Restore
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5">No deleted customers found.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+@endsection

@@ -1,15 +1,19 @@
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add New Admin</title>
-</head>
-<body>
-    <h1>Add New Admin</h1>
+@extends('admin.layouts.app')
+
+@section('title', 'Add New Admin')
+@section('heading', 'Add New Admin')
+
+@section('content')
+
+    <div class="page-heading">
+        <h1>Create Administrator</h1>
+        <p>Add a new administrator account to the system.</p>
+    </div>
 
     @if ($errors->any())
-        <div style="color: red;">
-            <ul>
+        <div class="alert-error">
+            <ul style="padding-left: 20px;">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -17,60 +21,74 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.admins.store') }}" method="POST">
-        @csrf
+    <div class="form-card">
 
-        <div>
-            <label>Name:</label>
-            <input
-                type="text"
-                name="name"
-                value="{{ old('name') }}"
-                required
-            >
-        </div>
+        <form action="{{ route('admin.admins.store') }}" method="POST">
+            @csrf
 
-        <br>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    class="form-control"
+                    value="{{ old('name') }}"
+                    placeholder="Enter full name"
+                    required
+                >
+            </div>
 
-        <div>
-            <label>Email:</label>
-            <input
-                type="email"
-                name="email"
-                value="{{ old('email') }}"
-                required
-            >
-        </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="form-control"
+                    value="{{ old('email') }}"
+                    placeholder="Enter email address"
+                    required
+                >
+            </div>
 
-        <br>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="form-control"
+                    placeholder="Enter password"
+                    required
+                >
+            </div>
 
-        <div>
-            <label>Password:</label>
-            <input
-                type="password"
-                name="password"
-                required
-            >
-        </div>
+            <div class="form-group">
+                <label for="password_confirmation">Confirm Password</label>
+                <input
+                    type="password"
+                    id="password_confirmation"
+                    name="password_confirmation"
+                    class="form-control"
+                    placeholder="Confirm password"
+                    required
+                >
+            </div>
 
-        <br>
+            <div class="action-links">
+                <button type="submit" class="btn">
+                    Create Admin
+                </button>
 
-        <div>
-            <label>Confirm Password:</label>
-            <input
-                type="password"
-                name="password_confirmation"
-                required
-            >
-        </div>
+                <a href="{{ route('admin.admins.index') }}"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
 
-        <br>
+        </form>
 
-        <button type="submit">Save Admin</button>
-    </form>
+    </div>
 
-    <br>
-
-    <a href="{{ route('admin.admins.index') }}">Back to Admin List</a>
-</body>
-</html>
+@endsection

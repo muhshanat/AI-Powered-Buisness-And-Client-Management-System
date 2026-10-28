@@ -1,14 +1,19 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Edit Admin</title>
-</head>
-<body>
-    <h1>Edit Admin</h1>
+
+@extends('admin.layouts.app')
+
+@section('title', 'Edit Admin')
+@section('heading', 'Edit Admin')
+
+@section('content')
+
+    <div class="page-heading">
+        <h1>Edit Administrator</h1>
+        <p>Update the administrator's account information.</p>
+    </div>
 
     @if ($errors->any())
-        <div style="color: red;">
-            <ul>
+        <div class="alert-error">
+            <ul style="padding-left: 20px;">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -16,55 +21,72 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.admins.update', $admin->id) }}" method="POST">
-        @csrf
-        @method('PUT')
+    <div class="form-card">
 
-        <div>
-            <label>Name:</label>
-            <input
-                type="text"
-                name="name"
-                value="{{ old('name', $admin->name) }}"
-                required
-            >
-        </div>
+        <form action="{{ route('admin.admins.update', $admin->id) }}" method="POST">
+            @csrf
+            @method('PUT')
 
-        <br>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    class="form-control"
+                    value="{{ old('name', $admin->name) }}"
+                    required
+                >
+            </div>
 
-        <div>
-            <label>Email:</label>
-            <input
-                type="email"
-                name="email"
-                value="{{ old('email', $admin->email) }}"
-                required
-            >
-        </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="form-control"
+                    value="{{ old('email', $admin->email) }}"
+                    required
+                >
+            </div>
 
-        <br>
+            <div class="form-group">
+                <label for="password">New Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="form-control"
+                    placeholder="Leave blank to keep the current password"
+                >
+                <small>Only enter a password if you want to change it.</small>
+            </div>
 
-        <p>Leave the password fields empty if you don't want to change the password.</p>
+            <div class="form-group">
+                <label for="password_confirmation">Confirm New Password</label>
+                <input
+                    type="password"
+                    id="password_confirmation"
+                    name="password_confirmation"
+                    class="form-control"
+                    placeholder="Confirm the new password"
+                >
+            </div>
 
-        <div>
-            <label>New Password:</label>
-            <input type="password" name="password">
-        </div>
+            <div class="action-links">
+                <button type="submit" class="btn">
+                    Update Admin
+                </button>
 
-        <br>
+                <a href="{{ route('admin.admins.index') }}"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
 
-        <div>
-            <label>Confirm New Password:</label>
-            <input type="password" name="password_confirmation">
-        </div>
+        </form>
 
-        <br>
+    </div>
 
-        <button type="submit">Update Admin</button>
-    </form>
-
-    <br>
-
-    <a href="{{ route('admin.admins.index') }}">Back to Admin List</a>
-</body>
-</html>
+@endsection

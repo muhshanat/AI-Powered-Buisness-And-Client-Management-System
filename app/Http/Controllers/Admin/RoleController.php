@@ -9,6 +9,24 @@ use Illuminate\Validation\Rule;
 
 class RoleController extends Controller
 {
+    private function availablePermissions(): array
+    {
+        return [
+            'customers.view' => 'View Customers',
+            'customers.create' => 'Add Customers',
+            'customers.edit' => 'Edit Customers',
+            'customers.delete' => 'Delete Customers',
+            'roles.view' => 'View Roles',
+            'roles.create' => 'Add Roles',
+            'roles.edit' => 'Edit Roles',
+            'roles.delete' => 'Delete Roles',
+            'admins.view' => 'View Admins',
+            'admins.create' => 'Add Admins',
+            'admins.edit' => 'Edit Admins',
+            'admins.delete' => 'Delete Admins',
+        ];
+    }
+
     public function index()
     {
         $roles = Role::latest()->get();
@@ -18,15 +36,23 @@ class RoleController extends Controller
 
     public function create()
     {
-        return view('admin.roles.create');
+        $permissions = $this->availablePermissions();
+
+        return view('admin.roles.create', compact('permissions'));
     }
 
     public function store(Request $request)
     {
+        $permissions = array_keys($this->availablePermissions());
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:roles,name'],
             'description' => ['nullable', 'string'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string', Rule::in($permissions)],
         ]);
+
+        $validated['permissions'] = $validated['permissions'] ?? [];
 
         Role::create($validated);
 
@@ -36,11 +62,15 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
-        return view('admin.roles.edit', compact('role'));
+        $permissions = $this->availablePermissions();
+
+        return view('admin.roles.edit', compact('role', 'permissions'));
     }
 
     public function update(Request $request, Role $role)
     {
+        $permissions = array_keys($this->availablePermissions());
+
         $validated = $request->validate([
             'name' => [
                 'required',
@@ -49,7 +79,11 @@ class RoleController extends Controller
                 Rule::unique('roles', 'name')->ignore($role->id),
             ],
             'description' => ['nullable', 'string'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string', Rule::in($permissions)],
         ]);
+
+        $validated['permissions'] = $validated['permissions'] ?? [];
 
         $role->update($validated);
 

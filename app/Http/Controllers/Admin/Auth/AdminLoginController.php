@@ -13,29 +13,32 @@ class AdminLoginController extends Controller
         return view('admin.auth.login');
     }
 
-    public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+   
+public function login(Request $request)
+{
+    $credentials = $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+    ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
 
-            if (Auth::user()->role === 'super_admin') {
-                return redirect()->route('admin.dashboard');
-            }
+        $user = Auth::user();
 
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-        }
+       if ($user->role === 'super_admin' || $user->role === 'Admin') {
+    return redirect()->route('admin.dashboard');
+}
 
-        return back()->withErrors([
-            'email' => 'Invalid credentials or you are not a Super Admin.',
-        ])->onlyInput('email');
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
     }
+
+    return back()->withErrors([
+        'email' => 'Invalid credentials or you do not have admin access.',
+    ])->onlyInput('email');
+}
 
     public function logout(Request $request)
     {
