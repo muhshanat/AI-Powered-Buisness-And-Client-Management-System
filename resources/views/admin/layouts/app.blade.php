@@ -13,7 +13,7 @@
     @php
         $user = auth()->user();
         $isSuperAdmin = $user && $user->role === 'super_admin';
-
+      
         $role = $user
             ? \App\Models\Role::where('name', $user->role)->first()
             : null;
@@ -72,17 +72,17 @@
 
         <div class="main-area">
 
-            <header class="topbar">
-                <h2>@yield('heading', 'Dashboard')</h2>
+           <header class="topbar">
+    <h2>@yield('heading', 'Dashboard')</h2>
 
-                <div>
-                    <span>{{ $user->name ?? 'Admin' }}</span>
+    <div class="user-info">
+        <span class="user-name">{{ $user->name ?? 'Admin' }}</span>
 
-                    <small>
-                        {{ $isSuperAdmin ? 'Super Admin' : ($user->role ?? 'Admin') }}
-                    </small>
-                </div>
-            </header>
+        <small class="user-role">
+            {{ $isSuperAdmin ? 'Super Admin' : ($user->role ?? 'Admin') }}
+        </small>
+    </div>
+</header>
 
             <main class="page-content">
 
