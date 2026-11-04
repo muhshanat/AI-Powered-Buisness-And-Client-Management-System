@@ -6,16 +6,6 @@
 
 @section('content')
 
-    <div class="page-heading">
-        <h1>Deleted Customers</h1>
-        <p>View and restore customer accounts that have been moved to Trash.</p>
-    </div>
-
-    @if (session('success'))
-    <div class="alert-success">
-        {{ session('success') }}
-    </div>
-@endif
     
 
     @if ($errors->any())

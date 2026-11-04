@@ -6,10 +6,7 @@
 
 @section('content')
 
-    <div class="page-heading">
-        <h1>Edit Administrator</h1>
-        <p>Update the administrator's account information.</p>
-    </div>
+
 
     @if ($errors->any())
         <div class="alert-error">

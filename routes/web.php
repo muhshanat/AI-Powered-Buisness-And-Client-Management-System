@@ -7,6 +7,9 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\TwoFactorController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\LoginSessionController;
 
 // Home
 Route::get('/', function () {
@@ -43,6 +46,44 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/logout', [AdminLoginController::class, 'logout'])
         ->name('logout');
 
+        // Activity Logs - Super Admin Only
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])
+    ->middleware(['auth', '2fa', 'superadmin'])
+    ->name('activity-logs.index');
+
+    // Notification Management
+    Route::prefix('notifications')->name('notifications.')
+    ->middleware(['auth', '2fa'])
+    ->group(function () {
+
+        Route::get('/', [NotificationController::class, 'index'])
+            ->name('index');
+
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])
+            ->name('read');
+
+        Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])
+            ->name('readAll');
+
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])
+            ->name('destroy');
+    });
+
+    
+   // Login Sessions
+   Route::get('/sessions', [LoginSessionController::class, 'index'])
+    ->middleware(['auth', '2fa', 'superadmin'])
+    ->name('sessions.index');
+
+   // Logout all other sessions - MUST come before {id}
+   Route::delete('/sessions/destroy-others', [LoginSessionController::class, 'destroyOthers'])
+    ->middleware(['auth', '2fa', 'superadmin'])
+    ->name('sessions.destroyOthers');
+
+   // Terminate individual session
+   Route::delete('/sessions/{id}', [LoginSessionController::class, 'destroy'])
+    ->middleware(['auth', '2fa', 'superadmin'])
+    ->name('sessions.destroy');
 
     // Google Authenticator - 2FA Routes
     Route::middleware('auth')->group(function () {
@@ -58,6 +99,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])
             ->name('2fa.verify.submit');
+
+        Route::get('/2fa/settings', [TwoFactorController::class, 'settings'])
+    ->middleware(['auth', 'superadmin'])
+    ->name('2fa.settings');
+
+        Route::post('/2fa/disable', [TwoFactorController::class, 'disable'])
+       ->middleware(['2fa', 'superadmin'])
+       ->name('2fa.disable');
+
     });
 
 

@@ -6,10 +6,7 @@
 
 @section('content')
 
-    <div class="page-heading">
-        <h1>Create New Customer</h1>
-        <p>Add a customer account to the system.</p>
-    </div>
+    
 
     @if ($errors->any())
         <div class="alert-error">

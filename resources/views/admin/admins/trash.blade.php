@@ -6,16 +6,7 @@
 
 @section('content')
 
-    <div class="page-heading">
-        <h1>Deleted Administrators</h1>
-        <p>View and restore administrator accounts that were moved to Trash.</p>
-    </div>
-
-    @if (session('success'))
-        <div class="alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
+    
 
     @if ($errors->any())
         <div class="alert-error">

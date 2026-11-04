@@ -1,11 +1,11 @@
-
 @extends('admin.layouts.app')
 
+@section('title', 'Edit Role')
+@section('heading', 'Edit Role')
+@section('page_description', 'Update role details and manage permissions.')
+
 @section('content')
-<div class="page-header">
-    <h1>Edit Role</h1>
-    <p>Update role details and permissions.</p>
-</div>
+
 
 <div class="content-card">
     <form action="{{ route('admin.roles.update', $role->id) }}" method="POST">

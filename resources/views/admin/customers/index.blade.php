@@ -6,16 +6,8 @@
 
 @section('content')
 
-    <div class="page-heading">
-        <h1>Customer Management</h1>
-        <p>View, update, and manage customer accounts.</p>
-    </div>
 
-   @if (session('success'))
-    <div class="alert-success">
-        {{ session('success') }}
-    </div>
-@endif
+
 
     @if ($errors->any())
         <div class="alert-error">

@@ -5,10 +5,7 @@
 
 @section('content')
 
-    <div class="page-heading">
-        <h1>Edit Customer</h1>
-        <p>Update the customer's account information.</p>
-    </div>
+    
 
     @if ($errors->any())
         <div class="alert-error">

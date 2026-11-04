@@ -6,16 +6,8 @@
 
 @section('content')
 
-    <div class="page-heading">
-        <h1>Admin Management</h1>
-        <p>Manage administrator accounts from here.</p>
-    </div>
 
-    @if (session('success'))
-        <div class="alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
+  
 
     <div class="content-card">
 

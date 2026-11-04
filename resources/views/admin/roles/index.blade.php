@@ -6,10 +6,6 @@
 
 @section('content')
 
-    <div class="page-heading">
-        <h1>Role Management</h1>
-        <p>Create and manage roles in your application.</p>
-    </div>
 
     @if (session('success'))
         <div class="alert-success">

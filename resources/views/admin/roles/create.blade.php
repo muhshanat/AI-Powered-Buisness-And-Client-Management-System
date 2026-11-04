@@ -6,10 +6,7 @@
 
 @section('content')
 
-    <div class="page-heading">
-        <h1>Create New Role</h1>
-        <p>Add a role and select its permissions.</p>
-    </div>
+  
 
     @if ($errors->any())
         <div class="alert-error">

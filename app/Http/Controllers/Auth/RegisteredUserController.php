@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Notifications\AdminAlertNotification;
+use Illuminate\Support\Facades\Notification;
 
 class RegisteredUserController extends Controller
 {
@@ -43,6 +45,16 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+
+        $superAdmins = User::where('role', 'super_admin')->get();
+
+    Notification::send(
+    $superAdmins,
+    new AdminAlertNotification(
+        'New Customer Registered',
+        $user->name . ' (' . $user->email . ') has created a new customer account.'
+    )
+);
 
         Auth::login($user);
 
