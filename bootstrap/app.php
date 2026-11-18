@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
         'permission' => \App\Http\Middleware\CheckPermission::class,
         '2fa' => \App\Http\Middleware\EnsureTwoFactorVerified::class,
+        'organization' => \App\Http\Middleware\EnsureOrganizationAccess::class,
     ]);
 })
 

@@ -68,7 +68,9 @@
                         <td>{{ $browser }} / {{ $device }}</td>
 
                         <td>
-                            {{ \Carbon\Carbon::createFromTimestamp($session->last_activity)->format('d M Y, h:i A') }}
+                           {{ \Carbon\Carbon::createFromTimestampUTC($session->last_activity)
+    ->setTimezone('Asia/Dhaka')
+    ->format('d M Y, h:i A') }}
                         </td>
 
                         <td>

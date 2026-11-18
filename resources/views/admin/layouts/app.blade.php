@@ -7,14 +7,59 @@
 
     <title>@yield('title', 'Admin Panel')</title>
 
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+   <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+
+@stack('styles')
+
+@php
+    $theme = \App\Models\Setting::pluck('value', 'key')->toArray();
+@endphp
+
+<style>
+    :root {
+        --app-primary: {{ $theme['primary_color'] ?? '#1769B2' }};
+        --app-secondary: {{ $theme['secondary_color'] ?? '#647F9B' }};
+        --app-background: {{ $theme['page_background'] ?? '#E5EDF6' }};
+        --app-nav-background: {{ $theme['nav_background'] ?? '#FFFFFF' }};
+        --app-nav-text: {{ $theme['nav_text_color'] ?? '#173B5E' }};
+        --app-button: {{ $theme['button_color'] ?? '#1769B2' }};
+        --app-heading: {{ $theme['heading_color'] ?? '#173B5E' }};
+        --app-body-text: {{ $theme['body_text_color'] ?? '#52677F' }};
+        --app-logo-text: {{ $theme['logo_text_color'] ?? '#173B5E' }};
+    }
+</style>
+
+@if(request()->routeIs('profile.edit'))
+    <link rel="stylesheet" href="{{ asset('css/admin-profile.css') }}?v=1">
+@endif
+    
+
 </head>
 
+<script>
+document.addEventListener('click', function (event) {
+
+    const dropdowns = document.querySelectorAll(
+        '.nav-dropdown, .profile-dropdown, .notification-dropdown, .add-account-dropdown'
+    );
+
+    dropdowns.forEach(function (dropdown) {
+
+        if (!dropdown.contains(event.target)) {
+            dropdown.removeAttribute('open');
+        }
+
+    });
+
+});
+</script>
 
 
 <body>
 
 @php
+
+    $applicationName = \App\Models\Setting::where('key', 'application_name')->value('value') ?? 'Admin Panel';
     $user = auth()->user();
     $isSuperAdmin = $user && $user->role === 'super_admin';
 
@@ -24,19 +69,20 @@
 
     $permissions = $role->permissions ?? [];
 
-    $canViewCustomers = $isSuperAdmin || in_array('customers.view', $permissions);
+    $canViewOrganizations = $isSuperAdmin || in_array('organizations.view', $permissions);
     $canViewRoles = $isSuperAdmin || in_array('roles.view', $permissions);
     $canViewAdmins = $isSuperAdmin || in_array('admins.view', $permissions);
 
-    $canViewCustomerTrash = $isSuperAdmin || in_array('customers.delete', $permissions);
+    $canViewOrganizationTrash = $isSuperAdmin || in_array('organizations.delete', $permissions);
     $canViewRoleTrash = $isSuperAdmin || in_array('roles.delete', $permissions);
     $canViewAdminTrash = $isSuperAdmin || in_array('admins.delete', $permissions);
 
     $trashActive = request()->routeIs(
-        'admin.customers.trash',
-        'admin.roles.trash',
-        'admin.admins.trash'
-    );
+    'admin.trash.*',
+    'admin.organizations.trash',
+    'admin.roles.trash',
+    'admin.admins.trash'
+                         );
 @endphp
 
 {{-- SVG ICON LIBRARY --}}
@@ -104,6 +150,125 @@
 
 <div class="admin-shell">
 
+        {{-- HORIZONTAL NAVIGATION --}}
+       <nav class="main-navigation">
+    <div class="navigation-scroll">
+
+    <a href="{{ route('admin.dashboard') }}" class="brand top-nav-brand">
+   <span class="brand-icon">
+    @if(!empty($theme['logo_path']))
+        <img src="{{ asset('storage/' . $theme['logo_path']) }}"
+             alt="Application Logo"
+             class="admin-brand-image">
+    @else
+        <svg><use href="#icon-shield"></use></svg>
+    @endif
+</span>
+
+    <span class="brand-name">{{ $applicationName }}</span>
+</a>
+
+        {{-- Dashboard --}}
+        <a href="{{ route('admin.dashboard') }}"
+           class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <svg><use href="#icon-dashboard"></use></svg>
+            <span>Dashboard</span>
+        </a>
+
+        {{-- Organizations --}}
+        @if ($canViewOrganizations)
+            <a href="{{ route('admin.organizations.index') }}"
+               class="nav-link {{ request()->routeIs('admin.organizations.*') && !request()->routeIs('admin.organizations.trash') ? 'active' : '' }}">
+                <svg><use href="#icon-users"></use></svg>
+                <span>Organizations</span>
+            </a>
+        @endif
+
+        {{-- Master Setup --}}
+        @if ($canViewAdmins || $canViewRoles)
+            <details name="main-navigation-dropdown" class="nav-dropdown">
+                <summary class="nav-link {{ request()->routeIs('admin.admins.*', 'admin.roles.*') ? 'active' : '' }}">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3L3 8l9 5 9-5-9-5z"/>
+        <path d="M3 12l9 5 9-5"/>
+        <path d="M3 16l9 5 9-5"/>
+    </svg>
+    <span>Master Setup</span>
+   <span class="dropdown-arrow"></span>
+</summary>
+
+                <div class="nav-dropdown-menu">
+                    @if ($canViewAdmins)
+                        <a href="{{ route('admin.admins.index') }}"
+                           class="dropdown-link {{ request()->routeIs('admin.admins.*') ? 'active' : '' }}">
+                            Admins
+                        </a>
+                    @endif
+
+                    @if ($canViewRoles)
+                        <a href="{{ route('admin.roles.index') }}"
+                           class="dropdown-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                            Roles & Permissions
+                        </a>
+                    @endif
+                </div>
+            </details>
+        @endif
+
+       {{-- Settings --}}
+@if ($isSuperAdmin)
+    <details name="main-navigation-dropdown" class="nav-dropdown">
+        <summary class="nav-link {{ request()->routeIs('admin.activity-logs.*', 'admin.sessions.*', 'admin.notifications.*') ? 'active' : '' }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 7h10"/>
+                <path d="M18 7h2"/>
+                <path d="M4 17h2"/>
+                <path d="M10 17h10"/>
+                <circle cx="16" cy="7" r="2"/>
+                <circle cx="8" cy="17" r="2"/>
+            </svg>
+            <span>Settings</span>
+            <span class="dropdown-arrow"></span>
+        </summary>
+
+        <div class="nav-dropdown-menu">
+            <a href="{{ route('admin.activity-logs.index') }}"
+               class="dropdown-link {{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }}">
+                Activity Logs
+            </a>
+
+            <a href="{{ route('admin.sessions.index') }}"
+               class="dropdown-link {{ request()->routeIs('admin.sessions.*') ? 'active' : '' }}">
+                Sessions
+            </a>
+
+            <a href="{{ route('admin.appearance.index') }}"
+   class="dropdown-link {{ request()->routeIs('admin.appearance.*') ? 'active' : '' }}">
+    Appearance
+</a>
+
+           @if ($canViewOrganizationTrash || $canViewRoleTrash || $canViewAdminTrash)
+    <a href="{{ route('admin.trash.index') }}"
+       class="dropdown-link {{ request()->routeIs('admin.trash.*') ? 'active' : '' }}">
+        
+        Trash
+    </a>
+@endif
+        </div>
+    </details>
+@endif
+
+
+
+
+
+    </div>
+</nav>
+
     {{-- TOP HEADER --}}
     <header class="admin-header">
 
@@ -114,17 +279,11 @@
                     <svg><use href="#icon-shield"></use></svg>
                 </span>
 
-                <span class="brand-name">Admin Panel</span>
+                <span class="brand-name">{{ $applicationName }}</span>
             </a>
 
             <div class="header-actions">
 
-                <button type="button"
-                    class="header-icon"
-                    title="Search coming soon"
-                    aria-label="Search">
-                    <svg><use href="#icon-search"></use></svg>
-                </button>
 
                <details name="admin-dropdown" class="notification-dropdown">
     <summary class="header-icon notification-button"
@@ -198,8 +357,16 @@
                     <summary class="profile-trigger">
 
                         <span class="profile-avatar">
-                            {{ strtoupper(substr($user->name ?? 'A', 0, 1)) }}
-                        </span>
+    @if($user && $user->profile_photo_path)
+        <img
+            src="{{ asset('storage/' . $user->profile_photo_path) }}"
+            alt="{{ $user->name }}"
+            class="profile-avatar-image"
+        >
+    @else
+        {{ strtoupper(substr($user->name ?? 'A', 0, 1)) }}
+    @endif
+</span>
 
                         <span class="profile-text">
                             <strong>{{ $user->name ?? 'Admin' }}</strong>
@@ -214,6 +381,8 @@
 
                     </summary>
 
+                    
+
                     <div class="profile-menu">
 
                         <div class="profile-menu-info">
@@ -223,14 +392,130 @@
 
                         <div class="profile-menu-divider"></div>
 
-                        <form method="POST" action="{{ route('admin.logout') }}">
-                            @csrf
 
-                            <button type="submit" class="dropdown-logout">
-                                <svg><use href="#icon-logout"></use></svg>
-                                Logout
-                            </button>
-                        </form>
+                        {{-- Profile --}}
+<a href="{{ route('profile.edit') }}" class="profile-menu-link">
+    <svg class="profile-menu-icon">
+        <use href="#icon-user"></use>
+    </svg>
+    <span>Profile</span>
+</a>
+
+{{-- 2FA Settings --}}
+@if ($isSuperAdmin)
+    <a href="{{ route('admin.2fa.settings') }}" class="profile-menu-link">
+        <svg class="profile-menu-icon">
+            <use href="#icon-lock"></use>
+        </svg>
+        <span>2FA Settings</span>
+    </a>
+@endif
+
+<div class="profile-menu-divider"></div>
+
+
+                {{-- Multiple Account Switcher --}}
+<div class="account-switcher-section">
+
+    <strong class="account-switcher-title">Switch Accounts</strong>
+
+    @php
+        $savedAccounts = session('saved_accounts', []);
+    @endphp
+
+    @forelse($savedAccounts as $account)
+
+        <div class="saved-account-item">
+
+    <div class="saved-account-info">
+
+        <div class="account-name-row">
+            <svg class="account-icon">
+                <use href="#icon-user"></use>
+            </svg>
+
+            
+            <strong>{{ $account['name'] }}</strong>
+        </div>
+
+    
+        <small>{{ $account['role'] ?? 'User' }}</small>
+
+    </div>
+
+    @if($account['id'] != $user->id)
+
+        <form method="POST"
+              action="{{ route('accounts.switch', $account['id']) }}">
+            @csrf
+
+            <button type="submit" class="account-switch-btn">
+                <span>⇄</span> Switch
+            </button>
+        </form>
+
+    @else
+
+        <span class="current-account-label">
+            ✓ Current
+        </span>
+
+    @endif
+
+</div>
+
+    @empty
+        <p class="no-saved-accounts">No other accounts added.</p>
+    @endforelse
+
+    <div class="profile-menu-divider"></div>
+
+    <details class="add-account-dropdown">
+        <summary>
+   <svg class="account-icon"
+     viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="1.8"
+     stroke-linecap="round"
+     stroke-linejoin="round">
+    <circle cx="10" cy="7" r="4"/>
+    <path d="M4 21v-2a6 6 0 0 1 12 0v2"/>
+    <path d="M19 8v6"/>
+    <path d="M16 11h6"/>
+</svg>
+    Add another account
+</summary>
+        <form method="POST" action="{{ route('accounts.add') }}">
+            @csrf
+
+            <input type="email"
+                   name="email"
+                   placeholder="Account email"
+                   required>
+
+            <input type="password"
+                   name="password"
+                   placeholder="Account password"
+                   required>
+
+            <button type="submit">Add Account</button>
+        </form>
+    </details>
+
+</div>
+
+
+
+
+<form method="POST" action="{{ route('admin.logout') }}">
+    @csrf
+
+    <button type="submit" class="dropdown-logout">
+        <svg><use href="#icon-logout"></use></svg>
+        Logout
+    </button>
+</form>
 
                     </div>
 
@@ -240,119 +525,7 @@
 
         </div>
 
-        {{-- HORIZONTAL NAVIGATION --}}
-        <nav class="main-navigation">
 
-            <div class="navigation-scroll">
-
-                <a href="{{ route('admin.dashboard') }}"
-                    class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <svg><use href="#icon-home"></use></svg>
-                    <span>Dashboard</span>
-                </a>
-
-                @if ($canViewCustomers)
-                    <a href="{{ route('admin.customers.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
-                        <svg><use href="#icon-users"></use></svg>
-                        <span>Customers</span>
-                    </a>
-                @endif
-
-                @if ($canViewAdmins)
-                    <a href="{{ route('admin.admins.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.admins.*') ? 'active' : '' }}">
-                        <svg><use href="#icon-user"></use></svg>
-                        <span>Admins</span>
-                    </a>
-                @endif
-
-                @if ($canViewRoles)
-                    <a href="{{ route('admin.roles.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
-                        <svg><use href="#icon-shield"></use></svg>
-                        <span>Roles & Permissions</span>
-                    </a>
-                @endif
-
-                @if ($isSuperAdmin)
-                
-
-                   <a href="{{ route('admin.activity-logs.index') }}"
-   class="nav-link {{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }}">
-    <svg><use href="#icon-file"></use></svg>
-    <span>Activity Logs</span>
-</a>
-
-
-
-
-    <a href="{{ route('admin.sessions.index') }}"
-   class="nav-link {{ request()->routeIs('admin.sessions.*') ? 'active' : '' }}">
-    <svg><use href="#icon-monitor"></use></svg>
-    <span>Sessions</span>
-    </a>
-
-
-
-                    <a href="{{ route('admin.notifications.index') }}"
-    class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
-    <svg><use href="#icon-bell"></use></svg>
-    <span>Notifications</span>
-</a>
-
-
-
-     <a href="{{ route('admin.2fa.settings') }}"
-   class="nav-link {{ request()->routeIs('admin.2fa.settings') ? 'active' : '' }}">
-    <svg><use href="#icon-lock"></use></svg>
-    <span>2FA Settings</span>
-</a>
-
-
-
-
-                    @if ($canViewCustomerTrash || $canViewRoleTrash || $canViewAdminTrash)
-
-                       <details name="admin-dropdown" class="trash-dropdown">
-
-    <summary class="nav-link {{ $trashActive ? 'active' : '' }}">
-        <svg><use href="#icon-trash"></use></svg>
-        <span>Trash</span>
-        <svg class="chevron"><use href="#icon-chevron"></use></svg>
-    </summary>
-
-    <div class="trash-menu">
-
-        @if ($canViewCustomerTrash)
-            <a href="{{ route('admin.customers.trash') }}">
-                Customers Trash
-            </a>
-        @endif
-
-        @if ($canViewRoleTrash)
-            <a href="{{ route('admin.roles.trash') }}">
-                Roles Trash
-            </a>
-        @endif
-
-        @if ($canViewAdminTrash)
-            <a href="{{ route('admin.admins.trash') }}">
-                Admins Trash
-            </a>
-        @endif
-
-    </div>
-
-</details>
-
-                    @endif
-
-                @endif
-
-            </div>
-
-        </nav>
 
     </header>
 
@@ -362,12 +535,7 @@
 
         <main class="page-content">
 
-            <div class="content-heading">
-                <div>
-                    <h1>@yield('heading', 'Dashboard')</h1>
-                   <p>@yield('page_description', 'Manage your application and administrative activities.')</p>
-                </div>
-            </div>
+           
 
             @if (session('success'))
                 <div class="alert alert-success">

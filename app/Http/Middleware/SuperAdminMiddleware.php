@@ -10,11 +10,13 @@ class SuperAdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check()) {
+        $guard = auth('superadmin');
+
+        if (!$guard->check()) {
             return redirect()->route('admin.login');
         }
 
-        if (auth()->user()->role !== 'super_admin') {
+        if ($guard->user()->role !== 'super_admin') {
             abort(403, 'Unauthorized access.');
         }
 

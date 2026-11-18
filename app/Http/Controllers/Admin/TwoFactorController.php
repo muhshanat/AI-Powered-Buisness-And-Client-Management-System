@@ -6,26 +6,27 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use PragmaRX\Google2FA\Google2FA;
 
 class TwoFactorController extends Controller
 {
+    // Show 2FA settings
+    public function settings()
+    {
+        $user = Auth::guard('superadmin')->user();
 
-    // Show 2FA Settings
-public function settings()
-{
-    $user = auth()->user();
+        if (!$user || $user->role !== 'super_admin') {
+            abort(403);
+        }
 
-    if (!$user || $user->role !== 'super_admin') {
-        abort(403);
+        return view('admin.two-factor.settings', compact('user'));
     }
 
-    return view('admin.two-factor.settings', compact('user'));
-}
-
+    // Show 2FA setup page
     public function setup()
     {
-        $user = auth()->user();
+        $user = Auth::guard('superadmin')->user();
 
         if (!$user || $user->role !== 'super_admin') {
             abort(403);
@@ -55,7 +56,7 @@ public function settings()
     // Enable Google Authenticator
     public function enable(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::guard('superadmin')->user();
 
         if (!$user || $user->role !== 'super_admin') {
             abort(403);
@@ -85,13 +86,11 @@ public function settings()
         $user->google2fa_enabled = true;
         $user->save();
 
-        // Regenerate session after successful verification.
         $request->session()->regenerate();
 
-        session(['admin_2fa_verified' => true]);
-        session()->forget('admin_2fa_pending');
+        $request->session()->put('admin_2fa_verified', true);
+        $request->session()->forget('admin_2fa_pending');
 
-        // Record 2FA activation.
         $this->recordActivity(
             $request,
             $user,
@@ -99,7 +98,6 @@ public function settings()
             'Google Authenticator was successfully enabled.'
         );
 
-        // Record successful Super Admin login.
         $this->recordActivity(
             $request,
             $user,
@@ -112,64 +110,61 @@ public function settings()
             ->with('success', 'Google Authenticator enabled successfully.');
     }
 
-
     // Disable Google Authenticator
-public function disable(Request $request)
-{
-    $user = auth()->user();
+    public function disable(Request $request)
+    {
+        $user = Auth::guard('superadmin')->user();
 
-    if (!$user || $user->role !== 'super_admin') {
-        abort(403);
-    }
+        if (!$user || $user->role !== 'super_admin') {
+            abort(403);
+        }
 
-    if (!$user->google2fa_enabled || !$user->google2fa_secret) {
-        return back()->with('error', 'Two-factor authentication is not enabled.');
-    }
+        if (!$user->google2fa_enabled || !$user->google2fa_secret) {
+            return back()->with('error', 'Two-factor authentication is not enabled.');
+        }
 
-    $request->validate([
-        'code' => ['required', 'digits:6'],
-    ]);
-
-    $google2fa = new Google2FA();
-
-    $valid = $google2fa->verifyKey(
-        $user->google2fa_secret,
-        $request->code
-    );
-
-    if (!$valid) {
-        return back()->withErrors([
-            'code' => 'Invalid authenticator code. Please try again.',
+        $request->validate([
+            'code' => ['required', 'digits:6'],
         ]);
+
+        $google2fa = new Google2FA();
+
+        $valid = $google2fa->verifyKey(
+            $user->google2fa_secret,
+            $request->code
+        );
+
+        if (!$valid) {
+            return back()->withErrors([
+                'code' => 'Invalid authenticator code. Please try again.',
+            ]);
+        }
+
+        $user->google2fa_enabled = false;
+        $user->google2fa_secret = null;
+        $user->save();
+
+        $request->session()->forget([
+            'admin_2fa_pending',
+            'admin_2fa_verified',
+        ]);
+
+        $this->recordActivity(
+            $request,
+            $user,
+            '2FA Disabled',
+            'Google Authenticator was disabled after successful code verification.'
+        );
+
+        return redirect()
+            ->route('admin.2fa.settings')
+            ->with('success', 'Google Authenticator disabled successfully.');
     }
-
-    // Disable 2FA and remove the old secret
-    $user->google2fa_enabled = false;
-    $user->google2fa_secret = null;
-    $user->save();
-
-    // Clear pending 2FA verification state
-    $request->session()->forget([
-        'admin_2fa_pending',
-        'admin_2fa_verified',
-    ]);
-
-    $this->recordActivity(
-        $request,
-        $user,
-        '2FA Disabled',
-        'Google Authenticator was disabled after successful code verification.'
-    );
-
-    return redirect()
-        ->route('admin.2fa.settings')
-        ->with('success', 'Google Authenticator disabled successfully.');
-}
 
     // Show verification page
     public function showVerify()
     {
-        $user = auth()->user();
+        $user = Auth::guard('superadmin')->user();
 
         if (
             !$user ||
@@ -186,7 +181,7 @@ public function disable(Request $request)
     // Verify Google Authenticator code
     public function verify(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::guard('superadmin')->user();
 
         if (
             !$user ||
@@ -214,13 +209,11 @@ public function disable(Request $request)
             ]);
         }
 
-        // Regenerate session after successful verification.
         $request->session()->regenerate();
 
-        session(['admin_2fa_verified' => true]);
-        session()->forget('admin_2fa_pending');
+        $request->session()->put('admin_2fa_verified', true);
+        $request->session()->forget('admin_2fa_pending');
 
-        // Record successful Super Admin login.
         $this->recordActivity(
             $request,
             $user,
@@ -231,7 +224,7 @@ public function disable(Request $request)
         return redirect()->route('admin.dashboard');
     }
 
-    // Save activity record in database
+    // Save activity record
     private function recordActivity(
         Request $request,
         User $user,

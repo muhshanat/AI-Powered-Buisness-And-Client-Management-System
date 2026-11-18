@@ -7,11 +7,7 @@
 @section('content')
 
 
-    @if (session('success'))
-        <div class="alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
+    
 
     <div class="content-card">
 
@@ -20,15 +16,10 @@
                 + Add New Role
             </a>
 
-            <a href="{{ route('admin.roles.trash') }}"
-               class="btn btn-secondary">
-                View Trash
-            </a>
 
-            <a href="{{ route('admin.dashboard') }}"
-               class="btn btn-secondary">
-                Back to Dashboard
-            </a>
+            <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
+    Back to Dashboard
+</a>
         </div>
 
         <div class="table-wrapper">

@@ -12,10 +12,10 @@ class RoleController extends Controller
     private function availablePermissions(): array
     {
         return [
-            'customers.view' => 'View Customers',
-            'customers.create' => 'Add Customers',
-            'customers.edit' => 'Edit Customers',
-            'customers.delete' => 'Delete Customers',
+            'organizations.view' => 'View organizations',
+            'organizations.create' => 'Add organizations',
+            'organizations.edit' => 'Edit organizations',
+            'organizations.delete' => 'Delete organizations',
             'roles.view' => 'View Roles',
             'roles.create' => 'Add Roles',
             'roles.edit' => 'Edit Roles',
@@ -111,7 +111,7 @@ class RoleController extends Controller
         $role = Role::onlyTrashed()->findOrFail($id);
         $role->restore();
 
-        return redirect()->route('admin.roles.trash')
-            ->with('success', 'Role restored successfully.');
+        return redirect()->route('admin.trash.index', ['tab' => 'roles'])
+    ->with('success', 'Role restored successfully.');
     }
 }

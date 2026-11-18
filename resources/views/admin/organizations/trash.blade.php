@@ -1,8 +1,8 @@
 
 @extends('admin.layouts.app')
 
-@section('title', 'Customer Trash')
-@section('heading', 'Customer Trash')
+@section('title', 'organization Trash')
+@section('heading', 'organization Trash')
 
 @section('content')
 
@@ -17,9 +17,9 @@
     <div class="content-card">
 
         <div class="action-links" style="margin-bottom: 20px;">
-            <a href="{{ route('admin.customers.index') }}"
+            <a href="{{ route('admin.organizations.index') }}"
                class="btn btn-secondary">
-                Back to Customer Management
+                Back to organization Management
             </a>
         </div>
 
@@ -36,17 +36,17 @@
                 </thead>
 
                 <tbody>
-                    @forelse ($customers as $customer)
+                    @forelse ($organizations as $organization)
                         <tr>
-                            <td>{{ $customer->id }}</td>
-                            <td>{{ $customer->name }}</td>
-                            <td>{{ $customer->email }}</td>
-                            <td>{{ $customer->deleted_at }}</td>
+                            <td>{{ $organization->id }}</td>
+                            <td>{{ $organization->name }}</td>
+                            <td>{{ $organization->email }}</td>
+                            <td>{{ $organization->deleted_at }}</td>
                             <td>
                                 <form
-                                    action="{{ route('admin.customers.restore', $customer->id) }}"
+                                    action="{{ route('admin.organizations.restore', $organization->id) }}"
                                     method="POST"
-                                    onsubmit="return confirm('Restore this customer?')"
+                                    onsubmit="return confirm('Restore this organization?')"
                                 >
                                     @csrf
 
@@ -58,7 +58,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5">No deleted customers found.</td>
+                            <td colspan="5">No deleted organizations found.</td>
                         </tr>
                     @endforelse
                 </tbody>

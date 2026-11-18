@@ -2,7 +2,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Customer Dashboard
+            organization Dashboard
         </h2>
     </x-slot>
 
@@ -15,7 +15,7 @@
                 </h1>
 
                 <p style="color: #64748b; margin-top: 8px;">
-                    Welcome to your customer dashboard.
+                    Welcome to your organization dashboard.
                 </p>
             </div>
 

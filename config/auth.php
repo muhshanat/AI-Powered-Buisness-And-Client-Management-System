@@ -38,11 +38,26 @@ return [
     */
 
     'guards' => [
-        'web' => [
-            'driver' => 'session',
-            'provider' => 'users',
-        ],
+
+    // Customer authentication
+    'web' => [
+        'driver' => 'session',
+        'provider' => 'users',
     ],
+
+    // Super Admin authentication
+    'superadmin' => [
+        'driver' => 'session',
+        'provider' => 'users',
+    ],
+
+    // Organization authentication
+    'organization' => [
+        'driver' => 'session',
+        'provider' => 'users',
+    ],
+
+],
 
     /*
     |--------------------------------------------------------------------------

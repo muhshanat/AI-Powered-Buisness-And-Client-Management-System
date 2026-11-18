@@ -16,10 +16,6 @@
                 + Add New Admin
             </a>
 
-            <a href="{{ route('admin.admins.trash') }}"
-               class="btn btn-secondary">
-                View Trash
-            </a>
 
             <a href="{{ route('admin.dashboard') }}"
                class="btn btn-secondary">

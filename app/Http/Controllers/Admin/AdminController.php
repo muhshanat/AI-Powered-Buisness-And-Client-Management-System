@@ -94,7 +94,7 @@ class AdminController extends Controller
         $admin = Admin::onlyTrashed()->findOrFail($id);
         $admin->restore();
 
-        return redirect()->route('admin.admins.trash')
-            ->with('success', 'Admin restored successfully.');
+        return redirect()->route('admin.trash.index', ['tab' => 'admins'])
+    ->with('success', 'Admin restored successfully.');
     }
 }

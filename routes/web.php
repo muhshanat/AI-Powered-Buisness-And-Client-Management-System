@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\Auth\AdminLoginController;
-use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\TwoFactorController;
@@ -10,18 +10,33 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\LoginSessionController;
+use App\Http\Controllers\AccountSwitcherController;
+use App\Http\Controllers\ProfilePhotoController;
+use App\Http\Controllers\Admin\AppearanceController;
+
 
 // Home
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Customer Dashboard
+//  Dashboard
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Customer Profile
+// Organization Dashboard
+Route::middleware(['auth', 'organization'])
+    ->prefix('organization')
+    ->name('organization.')
+    ->group(function () {
+        Route::get('/dashboard', [
+            \App\Http\Controllers\Organization\DashboardController::class,
+            'index'
+        ])->name('dashboard');
+    });
+
+// organization Profile
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
@@ -31,6 +46,13 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
+
+       // Profile Picture Routes
+Route::post('/profile/photo', [ProfilePhotoController::class, 'update'])
+    ->name('profile.photo.update');
+
+Route::delete('/profile/photo', [ProfilePhotoController::class, 'destroy'])
+    ->name('profile.photo.destroy');
 });
 
 // Admin Routes
@@ -46,10 +68,28 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/logout', [AdminLoginController::class, 'logout'])
         ->name('logout');
 
+        Route::post('/appearance/reset', [AppearanceController::class, 'reset'])
+    ->middleware(['auth', '2fa', 'superadmin'])
+    ->name('appearance.reset');
+
+
+    // Appearance Settings - Super Admin Only
+Route::get('/appearance', [AppearanceController::class, 'index'])
+    ->middleware(['auth', '2fa', 'superadmin'])
+    ->name('appearance.index');
+
+Route::post('/appearance', [AppearanceController::class, 'update'])
+    ->middleware(['auth', '2fa', 'superadmin'])
+    ->name('appearance.update');
+
+
+
         // Activity Logs - Super Admin Only
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])
     ->middleware(['auth', '2fa', 'superadmin'])
     ->name('activity-logs.index');
+
+    
 
     // Notification Management
     Route::prefix('notifications')->name('notifications.')
@@ -111,49 +151,118 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 
 
+    //switch to organization account
+
+    Route::post('/switch-to-organization', function (Illuminate\Http\Request $request) {
+    auth()->logout();
+
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect()->route('login')
+        ->with('status', 'Please log in with your organization account.');
+})->middleware(['auth', 'superadmin'])->name('switch-to-organization');
+
+
     // Super Admin Dashboard
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->middleware(['auth', '2fa'])->name('dashboard');
+   // Super Admin Dashboard
+Route::get('/dashboard', function () {
+    return view('admin.dashboard');
+})->middleware(['auth', '2fa', 'superadmin'])->name('dashboard');
 
 
-    // Customer Management
-    Route::prefix('customers')
-        ->name('customers.')
+
+// Trash Management Main Page
+Route::get('/trash', function (\Illuminate\Http\Request $request) {
+
+    $user = auth()->user();
+
+    $isSuperAdmin = $user->role === 'super_admin';
+
+    $role = \App\Models\Role::where('name', $user->role)->first();
+    $permissions = $role->permissions ?? [];
+
+    $canViewOrganizationTrash = $isSuperAdmin || in_array('organizations.delete', $permissions);
+    $canViewRoleTrash = $isSuperAdmin || in_array('roles.delete', $permissions);
+    $canViewAdminTrash = $isSuperAdmin || in_array('admins.delete', $permissions);
+
+    abort_unless(
+        $canViewOrganizationTrash || $canViewRoleTrash || $canViewAdminTrash,
+        403
+    );
+
+    $organizations = $canViewOrganizationTrash
+    ? \App\Models\Organization::onlyTrashed()
+        ->latest('deleted_at')
+        ->get()
+    : collect();
+
+    $roles = $canViewRoleTrash
+        ? \App\Models\Role::onlyTrashed()
+            ->latest('deleted_at')
+            ->get()
+        : collect();
+
+    $admins = $canViewAdminTrash
+        ? \App\Models\Admin::onlyTrashed()
+            ->latest('deleted_at')
+            ->get()
+        : collect();
+
+    return view('admin.trash.index', compact(
+        'organizations',
+        'roles',
+        'admins',
+        'canViewOrganizationTrash',
+        'canViewRoleTrash',
+        'canViewAdminTrash'
+    ));
+
+})->middleware(['auth', '2fa'])->name('trash.index');
+
+
+
+    // organization Management
+    Route::prefix('organizations')
+        ->name('organizations.')
         ->middleware(['auth', '2fa'])
         ->group(function () {
 
-            Route::get('/', [CustomerController::class, 'index'])
-                ->middleware('permission:customers.view')
+            Route::get('/', [OrganizationController::class, 'index'])
+                ->middleware('permission:organizations.view')
                 ->name('index');
 
-            Route::get('/create', [CustomerController::class, 'create'])
-                ->middleware('permission:customers.create')
+            Route::get('/create', [OrganizationController::class, 'create'])
+                ->middleware('permission:organizations.create')
                 ->name('create');
 
-            Route::post('/', [CustomerController::class, 'store'])
-                ->middleware('permission:customers.create')
+            Route::post('/', [OrganizationController::class, 'store'])
+                ->middleware('permission:organizations.create')
                 ->name('store');
 
-            Route::get('/trash', [CustomerController::class, 'trash'])
-                ->middleware('permission:customers.delete')
+            Route::get('/trash', [OrganizationController::class, 'trash'])
+                ->middleware('permission:organizations.delete')
                 ->name('trash');
 
-            Route::post('/{id}/restore', [CustomerController::class, 'restore'])
-                ->middleware('permission:customers.delete')
+            Route::post('/{id}/restore', [OrganizationController::class, 'restore'])
+                ->middleware('permission:organizations.delete')
                 ->name('restore');
 
-            Route::get('/{customer}/edit', [CustomerController::class, 'edit'])
-                ->middleware('permission:customers.edit')
+            Route::get('/{organization}/edit', [OrganizationController::class, 'edit'])
+                ->middleware('permission:organizations.edit')
                 ->name('edit');
 
-            Route::put('/{customer}', [CustomerController::class, 'update'])
-                ->middleware('permission:customers.edit')
+            Route::put('/{organization}', [OrganizationController::class, 'update'])
+                ->middleware('permission:organizations.edit')
                 ->name('update');
 
-            Route::delete('/{customer}', [CustomerController::class, 'destroy'])
-                ->middleware('permission:customers.delete')
+            Route::delete('/{organization}', [OrganizationController::class, 'destroy'])
+                ->middleware('permission:organizations.delete')
                 ->name('destroy');
+
+                Route::get('/{organization}', [OrganizationController::class, 'show'])
+    ->middleware('permission:organizations.view')
+    ->name('show');
         });
 
 
@@ -235,6 +344,21 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 ->middleware('permission:admins.delete')
                 ->name('destroy');
         });
+
+});
+
+
+// Multiple Account Switcher
+Route::middleware('auth')->group(function () {
+
+    Route::post('/accounts/add', [AccountSwitcherController::class, 'addAccount'])
+        ->name('accounts.add');
+
+    Route::post('/accounts/switch/{id}', [AccountSwitcherController::class, 'switchAccount'])
+        ->name('accounts.switch');
+
+    Route::delete('/accounts/remove/{id}', [AccountSwitcherController::class, 'removeAccount'])
+        ->name('accounts.remove');
 
 });
 

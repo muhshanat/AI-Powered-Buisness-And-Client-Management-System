@@ -22,25 +22,25 @@
 
     if ($isSuperAdmin) {
         $permissions = [
-            'customers.view',
+            'organizations.view',
             'roles.view',
             'admins.view',
         ];
     }
 
-    $canViewCustomers = in_array('customers.view', $permissions);
+    $canViewOrganizations = in_array('organizations.view', $permissions);
     $canViewRoles = in_array('roles.view', $permissions);
     $canViewAdmins = in_array('admins.view', $permissions);
 
-    // Customer query: exclude administrator accounts.
-    $customerQuery = User::query()->where(function ($query) {
+    // Organization query: exclude administrator accounts.
+    $organizationQuery = User::query()->where(function ($query) {
         $query->whereNull('role')
               ->orWhereNotIn('role', ['Admin', 'super_admin']);
     });
 
-    $totalCustomers = (clone $customerQuery)->count();
+    $totalOrganizations = (clone $organizationQuery)->count();
 
-    $newCustomers = (clone $customerQuery)
+    $newOrganizations = (clone $organizationQuery)
         ->whereBetween('created_at', [
             now()->copy()->startOfMonth(),
             now()->copy()->endOfMonth()
@@ -66,13 +66,13 @@
             ->count();
     }
 
-    // Recent customers.
-    $recentCustomers = (clone $customerQuery)
+    // Recent organizations.
+    $recentOrganizations = (clone $organizationQuery)
         ->latest()
         ->take(5)
         ->get(['name', 'email', 'created_at']);
 
-    // Customer growth over the last six months.
+    // Organization growth over the last six months.
     $growthLabels = [];
     $growthData = [];
 
@@ -81,7 +81,7 @@
 
         $growthLabels[] = $month->format('M');
 
-        $growthData[] = (clone $customerQuery)
+        $growthData[] = (clone $organizationQuery)
             ->whereBetween('created_at', [
                 $month->copy()->startOfMonth(),
                 $month->copy()->endOfMonth()
@@ -111,12 +111,12 @@
 {{-- STATISTICS CARDS --}}
 <div class="dashboard-stats">
 
-    @if ($canViewCustomers)
+    @if ($canViewOrganizations)
         <div class="dashboard-stat-card">
             <div class="dashboard-stat-top">
                 <div>
-                    <p>Total Customers</p>
-                    <h3>{{ number_format($totalCustomers) }}</h3>
+                    <p>Total Organizations</p>
+                    <h3>{{ number_format($totalOrganizations) }}</h3>
                 </div>
 
                 <div class="dashboard-stat-icon icon-blue">
@@ -129,16 +129,16 @@
                 </div>
             </div>
 
-            <a href="{{ route('admin.customers.index') }}" class="stat-link">
-                View customers <span>→</span>
+            <a href="{{ route('admin.organizations.index') }}" class="stat-link">
+                View organizations <span>→</span>
             </a>
         </div>
 
         <div class="dashboard-stat-card">
             <div class="dashboard-stat-top">
                 <div>
-                    <p>New Customers This Month</p>
-                    <h3>{{ number_format($newCustomers) }}</h3>
+                    <p>New Organizations This Month</p>
+                    <h3>{{ number_format($newOrganizations) }}</h3>
                 </div>
 
                 <div class="dashboard-stat-icon icon-green">
@@ -228,15 +228,15 @@
 
         <div class="panel-heading">
             <div>
-                <h3>Customer Growth</h3>
-                <p>New customer registrations over the last six months</p>
+                <h3>Organization Growth</h3>
+                <p>New organization registrations over the last six months</p>
             </div>
 
             <span class="panel-tag">Last 6 months</span>
         </div>
 
         <div class="chart-container">
-            <canvas id="customerGrowthChart"></canvas>
+            <canvas id="organizationGrowthChart"></canvas>
         </div>
 
     </div>
@@ -258,9 +258,9 @@
 
         <div class="chart-legend">
             <div>
-                <span class="legend-dot customer-dot"></span>
-                Customers
-                <strong>{{ number_format($totalCustomers) }}</strong>
+                <span class="legend-dot organization-dot"></span>
+                Organizations
+                <strong>{{ number_format($totalOrganizations) }}</strong>
             </div>
 
             <div>
@@ -279,16 +279,16 @@
 <div class="dashboard-grid lower-grid">
 
     {{-- RECENT CUSTOMERS --}}
-    @if ($canViewCustomers)
+    @if ($canViewOrganizations)
         <div class="dashboard-panel recent-panel">
 
             <div class="panel-heading">
                 <div>
-                    <h3>Recent Customers</h3>
-                    <p>Latest registered customer accounts</p>
+                    <h3>Recent Organizations</h3>
+                    <p>Latest registered organization accounts</p>
                 </div>
 
-                <a href="{{ route('admin.customers.index') }}" class="panel-action">
+                <a href="{{ route('admin.organizations.index') }}" class="panel-action">
                     View all →
                 </a>
             </div>
@@ -297,35 +297,35 @@
                 <table class="dashboard-table">
                     <thead>
                         <tr>
-                            <th>Customer</th>
+                            <th>Organization</th>
                             <th>Email</th>
                             <th>Registered</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @forelse ($recentCustomers as $customer)
+                        @forelse ($recentOrganizations as $organization)
                             <tr>
                                 <td>
-                                    <div class="customer-cell">
-                                        <span class="customer-avatar">
-                                            {{ strtoupper(substr($customer->name, 0, 1)) }}
+                                    <div class="organization-cell">
+                                        <span class="organization-avatar">
+                                            {{ strtoupper(substr($organization->name, 0, 1)) }}
                                         </span>
 
-                                        <strong>{{ $customer->name }}</strong>
+                                        <strong>{{ $organization->name }}</strong>
                                     </div>
                                 </td>
 
-                                <td>{{ $customer->email }}</td>
+                                <td>{{ $organization->email }}</td>
 
                                 <td>
-                                    {{ $customer->created_at?->format('d M Y') ?? '—' }}
+                                    {{ $organization->created_at?->format('d M Y') ?? '—' }}
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="3" class="empty-table">
-                                    No customers registered yet.
+                                    No organizations registered yet.
                                 </td>
                             </tr>
                         @endforelse
@@ -381,14 +381,14 @@
 
     <div class="quick-actions">
 
-        @if ($canViewCustomers)
-            <a href="{{ route('admin.customers.create') }}" class="quick-action">
+        @if ($canViewOrganizations)
+            <a href="{{ route('admin.organizations.create') }}" class="quick-action">
                 <span class="quick-action-icon icon-blue">
                     <svg viewBox="0 0 24 24">
                         <path d="M12 5v14M5 12h14"/>
                     </svg>
                 </span>
-                <span>Add Customer</span>
+                <span>Add Organization</span>
             </a>
         @endif
 
@@ -457,8 +457,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const growthLabels = @json($growthLabels);
     const growthData = @json($growthData);
 
-    // Customer Growth Line Chart
-    const growthCanvas = document.getElementById('customerGrowthChart');
+    // Organization Growth Line Chart
+    const growthCanvas = document.getElementById('organizationGrowthChart');
 
     if (growthCanvas) {
         new Chart(growthCanvas, {
@@ -468,7 +468,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 labels: growthLabels,
 
                datasets: [{
-    label: 'New Customers',
+    label: 'New Organizations',
     data: growthData,
 
     borderColor: '#1685E5',
@@ -526,11 +526,11 @@ document.addEventListener('DOMContentLoaded', function () {
             type: 'doughnut',
 
             data: {
-                labels: ['Customers', 'Admin Accounts'],
+                labels: ['Organizations', 'Admin Accounts'],
 
                datasets: [{
     data: [
-        {{ $totalCustomers }},
+        {{ $totalOrganizations }},
         {{ $totalAdmins }}
     ],
 

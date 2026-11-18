@@ -14,16 +14,20 @@ class CheckPermission
         Closure $next,
         string $permission
     ): Response {
-        $user = $request->user();
+
+        // Get the logged-in platform administrator
+        $user = $request->user('superadmin');
 
         if (!$user) {
             abort(403, 'Please log in first.');
         }
 
+        // Super Admin has full access
         if ($user->role === 'super_admin') {
             return $next($request);
         }
 
+        // Check permissions for regular Admin
         $role = Role::where('name', $user->role)->first();
 
         if (!$role) {
@@ -32,11 +36,11 @@ class CheckPermission
 
         $permissions = $role->permissions ?? [];
 
-       if (!in_array($permission, $permissions)) {
-        return redirect()
-        ->route('admin.dashboard')
-        ->with('error', 'You do not have permission to access this page.');
-}
+        if (!in_array($permission, $permissions)) {
+            return redirect()
+                ->route('admin.dashboard')
+                ->with('error', 'You do not have permission to access this page.');
+        }
 
         return $next($request);
     }

@@ -22,70 +22,76 @@ class AdminLoginController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
+        $guard = Auth::guard('superadmin');
 
-            $request->session()->regenerate();
-
-            $user = Auth::user();
-
-            // Super Admin Login
-            if ($user->role === 'super_admin') {
-
-                if (!$user->google2fa_enabled) {
-
-                    $this->recordActivity(
-                        $request,
-                        $user,
-                        '2FA Setup Started',
-                        'Super Admin password verified. Google Authenticator setup required.'
-                    );
-
-                    $request->session()->forget('admin_2fa_verified');
-
-                    return redirect()->route('admin.2fa.setup');
-                }
-
-                $this->recordActivity(
-                    $request,
-                    $user,
-                    '2FA Challenge',
-                    'Super Admin password verified. Google Authenticator verification required.'
-                );
-
-                $request->session()->forget('admin_2fa_verified');
-                $request->session()->put('admin_2fa_pending', true);
-
-                return redirect()->route('admin.2fa.verify');
-            }
-
-            // Regular Admin Login
-            if ($user->role === 'Admin') {
-
-                $this->recordActivity(
-                    $request,
-                    $user,
-                    'Login',
-                    'Admin successfully logged in.'
-                );
-
-                return redirect()->route('admin.dashboard');
-            }
-
-            // Reject users who do not have admin access
-            Auth::logout();
-
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        if (!$guard->attempt($credentials)) {
+            return back()->withErrors([
+                'email' => 'Invalid credentials or you do not have admin access.',
+            ])->onlyInput('email');
         }
 
+        $request->session()->regenerate();
+
+        $user = $guard->user();
+
+        // Super Admin login
+        if ($user->role === 'super_admin') {
+
+            if (!$user->google2fa_enabled) {
+
+                $this->recordActivity(
+                    $request,
+                    $user,
+                    '2FA Setup Started',
+                    'Super Admin password verified. Google Authenticator setup required.'
+                );
+
+                $request->session()->forget([
+                    'admin_2fa_verified',
+                    'admin_2fa_pending',
+                ]);
+
+                return redirect()->route('admin.2fa.setup');
+            }
+
+            $this->recordActivity(
+                $request,
+                $user,
+                '2FA Challenge',
+                'Super Admin password verified. Google Authenticator verification required.'
+            );
+
+            $request->session()->forget('admin_2fa_verified');
+            $request->session()->put('admin_2fa_pending', true);
+
+            return redirect()->route('admin.2fa.verify');
+        }
+
+        // Regular Admin login
+        if ($user->role === 'Admin') {
+
+            $this->recordActivity(
+                $request,
+                $user,
+                'Login',
+                'Admin successfully logged in.'
+            );
+
+            return redirect()->route('admin.dashboard');
+        }
+
+        // Reject other account types
+        $guard->logout();
+
         return back()->withErrors([
-            'email' => 'Invalid credentials or you do not have admin access.',
+            'email' => 'This account does not have admin access.',
         ])->onlyInput('email');
     }
 
     public function logout(Request $request)
     {
-        $user = Auth::user();
+        $guard = Auth::guard('superadmin');
+        $user = $guard->user();
 
         if ($user && in_array($user->role, ['Admin', 'super_admin'])) {
 
@@ -97,17 +103,18 @@ class AdminLoginController extends Controller
             );
         }
 
-        Auth::logout();
+        $guard->logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Do not invalidate the entire session.
+        $request->session()->forget([
+            'login_superadmin_' . ($user?->id ?? ''),
+            'admin_2fa_verified',
+            'admin_2fa_pending',
+        ]);
 
         return redirect()->route('admin.login');
     }
 
-    /**
-     * Save activity in activity_logs table.
-     */
     private function recordActivity(
         Request $request,
         User $user,

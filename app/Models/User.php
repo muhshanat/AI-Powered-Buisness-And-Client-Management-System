@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Fillable([
     'name',
@@ -17,7 +18,10 @@ use Illuminate\Notifications\Notifiable;
     'role',
     'google2fa_secret',
     'google2fa_enabled',
+    'profile_photo_path',
+    'google_avatar',
 ])]
+
 #[Hidden(['password', 'remember_token', 'google2fa_secret'])]
 class User extends Authenticatable
 {
@@ -29,6 +33,17 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+
+
+public function organizations(): BelongsToMany
+{
+    return $this->belongsToMany(
+        Organization::class,
+        'organization_user'
+    )->withPivot(['organization_role', 'is_active'])
+     ->withTimestamps();
+}
+
     protected function casts(): array
     {
         return [
