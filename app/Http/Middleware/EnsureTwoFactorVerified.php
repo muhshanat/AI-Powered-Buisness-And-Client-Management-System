@@ -12,8 +12,18 @@ class EnsureTwoFactorVerified
     {
         $user = auth('superadmin')->user();
 
-        if (!$user || $user->role !== 'super_admin') {
-            abort(403, 'Super Admin authentication required.');
+        if (!$user) {
+            return redirect()->route('admin.login');
+        }
+
+        // Regular Admin can continue without Super Admin 2FA
+        if ($user->role === 'Admin') {
+            return $next($request);
+        }
+
+        // Only Super Admin must complete 2FA
+        if ($user->role !== 'super_admin') {
+            abort(403, 'Unauthorized access.');
         }
 
         if (!$user->google2fa_enabled) {

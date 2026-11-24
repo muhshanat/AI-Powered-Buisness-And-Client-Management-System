@@ -16,8 +16,8 @@
         }
 
         body {
-            background: #f1f5f9;
-            color: #243b53;
+            background: #e2eaf3;
+            color: #153451;
         }
 
         .org-layout {
@@ -29,33 +29,34 @@
         .org-sidebar {
             width: 250px;
             background: #ffffff;
-            border-right: 1px solid #e2e8f0;
+            border-right: 1px solid #d5e0ec;
             padding: 25px 16px;
             position: fixed;
             top: 0;
             bottom: 0;
             left: 0;
             overflow-y: auto;
+            z-index: 10;
         }
 
         .org-brand {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 5px;
             padding: 0 12px 28px;
             font-size: 21px;
             font-weight: 700;
-            color: #183b60;
+            color: #173b60;
         }
 
         .org-brand span {
-            color: #168b91;
+            color: #287bd1;
         }
 
         .org-nav-label {
             font-size: 10px;
             font-weight: 700;
-            color: #94a3b8;
+            color: #8498ad;
             letter-spacing: 1px;
             padding: 15px 12px 8px;
         }
@@ -66,7 +67,7 @@
             gap: 12px;
             padding: 12px;
             margin-bottom: 5px;
-            color: #64748b;
+            color: #405b78;
             font-size: 13px;
             font-weight: 600;
             text-decoration: none;
@@ -76,8 +77,12 @@
 
         .org-nav a:hover,
         .org-nav a.active {
-            background: #eaf5f5;
-            color: #168b91;
+            background: #e5f0fc;
+            color: #1769b0;
+        }
+
+        .org-nav a.active {
+            border-left: 3px solid #3287d8;
         }
 
         .org-nav-icon {
@@ -95,9 +100,9 @@
 
         /* Topbar */
         .org-topbar {
-            height: 75px;
+            height: 70px;
             background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid #d5e0ec;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -106,7 +111,7 @@
 
         .org-topbar h2 {
             font-size: 18px;
-            color: #183b60;
+            color: #153b60;
         }
 
         .org-user {
@@ -115,14 +120,15 @@
             gap: 12px;
             font-size: 13px;
             font-weight: 600;
+            color: #173b60;
         }
 
         .org-user-avatar {
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: #e4eff8;
-            color: #17639b;
+            background: #e1effc;
+            color: #2675bd;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -132,29 +138,40 @@
         /* Content */
         .org-content {
             padding: 30px;
+            min-height: calc(100vh - 70px);
         }
 
         .org-page-heading {
             margin-bottom: 25px;
+            background: #f8fbff;
+            border: 1px solid #d5e3f1;
+            border-left: 4px solid #3287d8;
+            border-radius: 13px;
+            padding: 30px;
         }
 
         .org-page-heading h1 {
             font-size: 24px;
-            color: #183b60;
-            margin-bottom: 7px;
+            color: #153b60;
+            margin-bottom: 9px;
         }
 
         .org-page-heading p {
-            color: #718096;
+            color: #647f9c;
             font-size: 13px;
         }
 
         .org-card {
             background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 22px;
-            box-shadow: 0 3px 12px rgba(30, 55, 90, 0.04);
+            border: 1px solid #cbdbea;
+            border-radius: 13px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(30, 65, 100, 0.07);
+        }
+
+        .org-card h2 {
+            color: #153b60;
+            font-size: 19px;
         }
 
         .org-logout {
@@ -166,7 +183,7 @@
             align-items: center;
             gap: 12px;
             padding: 12px;
-            color: #dc5555;
+            color: #d94e55;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -209,8 +226,8 @@
             }
 
             .org-nav-label,
-            .org-nav a span,
-            .org-logout span {
+            .org-nav a span:not(:first-child),
+            .org-logout span:not(:first-child) {
                 display: none;
             }
 
@@ -242,7 +259,6 @@
 
 <div class="org-layout">
 
-    {{-- Sidebar --}}
     <aside class="org-sidebar">
 
         <div class="org-brand">
@@ -261,70 +277,35 @@
 
             <div class="org-nav-label">BUSINESS MANAGEMENT</div>
 
-            <a href="#">
-                <span>♙</span>
-                <span>Staff Management</span>
-            </a>
-
-            <a href="#">
-                <span>▣</span>
-                <span>Products</span>
-            </a>
-
-            <a href="#">
-                <span>◇</span>
-                <span>Services</span>
-            </a>
-
-            <a href="#">
-                <span>🛒</span>
-                <span>Orders</span>
-            </a>
-
-            <a href="#">
-                <span>▦</span>
-                <span>Appointments</span>
-            </a>
+            <a href="#"><span>♙</span><span>Staff Management</span></a>
+            <a href="#"><span>▣</span><span>Products</span></a>
+            <a href="#"><span>◇</span><span>Services</span></a>
+            <a href="#"><span>🛒</span><span>Orders</span></a>
+            <a href="#"><span>▦</span><span>Appointments</span></a>
 
             <div class="org-nav-label">COMMUNICATION</div>
 
-            <a href="#">
-                <span>✉</span>
-                <span>Conversations</span>
-            </a>
-
-            <a href="#">
-                <span>✧</span>
-                <span>AI Assistant</span>
-            </a>
+            <a href="#"><span>✉</span><span>Conversations</span></a>
+            <a href="#"><span>✧</span><span>AI Assistant</span></a>
 
             <div class="org-nav-label">SETTINGS</div>
 
-            <a href="#">
-                <span>⚙</span>
-                <span>Organization Settings</span>
-            </a>
+            <a href="#"><span>⚙</span><span>Organization Settings</span></a>
 
         </nav>
 
-        <div style="margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
-
+        <div style="margin-top:25px; border-top:1px solid #dce5ef; padding-top:15px;">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-
                 <button type="submit" class="org-logout">
                     <span>↪</span>
                     <span>Logout</span>
                 </button>
-
             </form>
-
         </div>
 
     </aside>
 
-
-    {{-- Main Content --}}
     <main class="org-main">
 
         <header class="org-topbar">
@@ -334,12 +315,13 @@
             <div class="org-user">
 
                 <div class="org-user-avatar">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    {{ strtoupper(substr(auth('organization')->user()->name, 0, 1)) }}
                 </div>
 
                 <div>
-                    {{ auth()->user()->name }}
-                    <div style="font-size: 11px; color: #718096; font-weight: 400;">
+                    {{ auth('organization')->user()->name }}
+
+                    <div style="font-size:11px; color:#71869d; font-weight:400;">
                         Organization Workspace
                     </div>
                 </div>

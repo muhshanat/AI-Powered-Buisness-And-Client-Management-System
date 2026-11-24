@@ -6,13 +6,15 @@ use App\Http\Controllers\Admin\OrganizationController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\TwoFactorController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\LoginSessionController;
 use App\Http\Controllers\AccountSwitcherController;
 use App\Http\Controllers\ProfilePhotoController;
 use App\Http\Controllers\Admin\AppearanceController;
+use App\Http\Controllers\Organization\DashboardController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 
 // Home
@@ -20,24 +22,33 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-//  Dashboard
+
+// Default Dashboard (Web Guard)
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+
 // Organization Dashboard
-Route::middleware(['auth', 'organization'])
+Route::middleware(['auth:organization', 'organization'])
     ->prefix('organization')
     ->name('organization.')
     ->group(function () {
+
         Route::get('/dashboard', [
-            \App\Http\Controllers\Organization\DashboardController::class,
+            DashboardController::class,
             'index'
         ])->name('dashboard');
+
+                // Product Management
+        Route::resource('products', \App\Http\Controllers\Organization\ProductController::class)
+            ->except(['show']);
     });
 
-// organization Profile
+
+// Profile Routes (Web Guard)
 Route::middleware('auth')->group(function () {
+
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
 
@@ -47,13 +58,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 
-       // Profile Picture Routes
-Route::post('/profile/photo', [ProfilePhotoController::class, 'update'])
-    ->name('profile.photo.update');
+    // Profile Picture Routes
+    Route::post('/profile/photo', [ProfilePhotoController::class, 'update'])
+        ->name('profile.photo.update');
 
-Route::delete('/profile/photo', [ProfilePhotoController::class, 'destroy'])
-    ->name('profile.photo.destroy');
+    Route::delete('/profile/photo', [ProfilePhotoController::class, 'destroy'])
+        ->name('profile.photo.destroy');
+
 });
+
 
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -68,65 +81,66 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/logout', [AdminLoginController::class, 'logout'])
         ->name('logout');
 
-        Route::post('/appearance/reset', [AppearanceController::class, 'reset'])
-    ->middleware(['auth', '2fa', 'superadmin'])
-    ->name('appearance.reset');
-
 
     // Appearance Settings - Super Admin Only
-Route::get('/appearance', [AppearanceController::class, 'index'])
-    ->middleware(['auth', '2fa', 'superadmin'])
-    ->name('appearance.index');
+    Route::post('/appearance/reset', [AppearanceController::class, 'reset'])
+        ->middleware(['auth:superadmin', '2fa', 'superadmin'])
+        ->name('appearance.reset');
 
-Route::post('/appearance', [AppearanceController::class, 'update'])
-    ->middleware(['auth', '2fa', 'superadmin'])
-    ->name('appearance.update');
+    Route::get('/appearance', [AppearanceController::class, 'index'])
+        ->middleware(['auth:superadmin', '2fa', 'superadmin'])
+        ->name('appearance.index');
+
+    Route::post('/appearance', [AppearanceController::class, 'update'])
+        ->middleware(['auth:superadmin', '2fa', 'superadmin'])
+        ->name('appearance.update');
 
 
-
-        // Activity Logs - Super Admin Only
+    // Activity Logs - Super Admin Only
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])
-    ->middleware(['auth', '2fa', 'superadmin'])
-    ->name('activity-logs.index');
+        ->middleware(['auth:superadmin', '2fa', 'superadmin'])
+        ->name('activity-logs.index');
 
-    
 
     // Notification Management
-    Route::prefix('notifications')->name('notifications.')
-    ->middleware(['auth', '2fa'])
-    ->group(function () {
+    Route::prefix('notifications')
+        ->name('notifications.')
+        ->middleware(['auth:superadmin', '2fa'])
+        ->group(function () {
 
-        Route::get('/', [NotificationController::class, 'index'])
-            ->name('index');
+            Route::get('/', [NotificationController::class, 'index'])
+                ->name('index');
 
-        Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])
-            ->name('read');
+            Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])
+                ->name('read');
 
-        Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])
-            ->name('readAll');
+            Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])
+                ->name('readAll');
 
-        Route::delete('/{id}', [NotificationController::class, 'destroy'])
-            ->name('destroy');
-    });
+            Route::delete('/{id}', [NotificationController::class, 'destroy'])
+                ->name('destroy');
 
-    
-   // Login Sessions
-   Route::get('/sessions', [LoginSessionController::class, 'index'])
-    ->middleware(['auth', '2fa', 'superadmin'])
-    ->name('sessions.index');
+        });
 
-   // Logout all other sessions - MUST come before {id}
-   Route::delete('/sessions/destroy-others', [LoginSessionController::class, 'destroyOthers'])
-    ->middleware(['auth', '2fa', 'superadmin'])
-    ->name('sessions.destroyOthers');
 
-   // Terminate individual session
-   Route::delete('/sessions/{id}', [LoginSessionController::class, 'destroy'])
-    ->middleware(['auth', '2fa', 'superadmin'])
-    ->name('sessions.destroy');
+    // Login Sessions - Super Admin Only
+    Route::get('/sessions', [LoginSessionController::class, 'index'])
+        ->middleware(['auth:superadmin', '2fa', 'superadmin'])
+        ->name('sessions.index');
+
+    // Logout all other sessions
+    Route::delete('/sessions/destroy-others', [LoginSessionController::class, 'destroyOthers'])
+        ->middleware(['auth:superadmin', '2fa', 'superadmin'])
+        ->name('sessions.destroyOthers');
+
+    // Terminate individual session
+    Route::delete('/sessions/{id}', [LoginSessionController::class, 'destroy'])
+        ->middleware(['auth:superadmin', '2fa', 'superadmin'])
+        ->name('sessions.destroy');
+
 
     // Google Authenticator - 2FA Routes
-    Route::middleware('auth')->group(function () {
+    Route::middleware('auth:superadmin')->group(function () {
 
         Route::get('/2fa/setup', [TwoFactorController::class, 'setup'])
             ->name('2fa.setup');
@@ -141,91 +155,95 @@ Route::post('/appearance', [AppearanceController::class, 'update'])
             ->name('2fa.verify.submit');
 
         Route::get('/2fa/settings', [TwoFactorController::class, 'settings'])
-    ->middleware(['auth', 'superadmin'])
-    ->name('2fa.settings');
+            ->middleware('superadmin')
+            ->name('2fa.settings');
 
         Route::post('/2fa/disable', [TwoFactorController::class, 'disable'])
-       ->middleware(['2fa', 'superadmin'])
-       ->name('2fa.disable');
+            ->middleware(['2fa', 'superadmin'])
+            ->name('2fa.disable');
 
     });
 
 
-    //switch to organization account
+    // Switch to Organization Account
+    Route::post('/switch-to-organization', function () {
 
-    Route::post('/switch-to-organization', function (Illuminate\Http\Request $request) {
-    auth()->logout();
+        auth('superadmin')->logout();
 
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+        session()->forget([
+            'admin_2fa_verified',
+            'admin_2fa_pending'
+        ]);
 
-    return redirect()->route('login')
-        ->with('status', 'Please log in with your organization account.');
-})->middleware(['auth', 'superadmin'])->name('switch-to-organization');
+        return redirect()->route('login')
+            ->with('status', 'Please log in with your organization account.');
 
-
-    // Super Admin Dashboard
-   // Super Admin Dashboard
-Route::get('/dashboard', function () {
-    return view('admin.dashboard');
-})->middleware(['auth', '2fa', 'superadmin'])->name('dashboard');
+    })->middleware(['auth:superadmin', 'superadmin'])
+        ->name('switch-to-organization');
 
 
-
-// Trash Management Main Page
-Route::get('/trash', function (\Illuminate\Http\Request $request) {
-
-    $user = auth()->user();
-
-    $isSuperAdmin = $user->role === 'super_admin';
-
-    $role = \App\Models\Role::where('name', $user->role)->first();
-    $permissions = $role->permissions ?? [];
-
-    $canViewOrganizationTrash = $isSuperAdmin || in_array('organizations.delete', $permissions);
-    $canViewRoleTrash = $isSuperAdmin || in_array('roles.delete', $permissions);
-    $canViewAdminTrash = $isSuperAdmin || in_array('admins.delete', $permissions);
-
-    abort_unless(
-        $canViewOrganizationTrash || $canViewRoleTrash || $canViewAdminTrash,
-        403
-    );
-
-    $organizations = $canViewOrganizationTrash
-    ? \App\Models\Organization::onlyTrashed()
-        ->latest('deleted_at')
-        ->get()
-    : collect();
-
-    $roles = $canViewRoleTrash
-        ? \App\Models\Role::onlyTrashed()
-            ->latest('deleted_at')
-            ->get()
-        : collect();
-
-    $admins = $canViewAdminTrash
-        ? \App\Models\Admin::onlyTrashed()
-            ->latest('deleted_at')
-            ->get()
-        : collect();
-
-    return view('admin.trash.index', compact(
-        'organizations',
-        'roles',
-        'admins',
-        'canViewOrganizationTrash',
-        'canViewRoleTrash',
-        'canViewAdminTrash'
-    ));
-
-})->middleware(['auth', '2fa'])->name('trash.index');
+    // Admin Dashboard
+    // Super Admin and regular Admin can access this route
+    Route::get('/dashboard', function () {
+        return view('admin.dashboard');
+    })->middleware(['auth:superadmin', '2fa'])
+        ->name('dashboard');
 
 
+    // Trash Management
+    Route::get('/trash', function (Request $request) {
 
-    // organization Management
+        $user = auth('superadmin')->user();
+
+        $isSuperAdmin = $user->role === 'super_admin';
+
+        $role = \App\Models\Role::where('name', $user->role)->first();
+        $permissions = $role->permissions ?? [];
+
+        $canViewOrganizationTrash = $isSuperAdmin || in_array('organizations.delete', $permissions);
+        $canViewRoleTrash = $isSuperAdmin || in_array('roles.delete', $permissions);
+        $canViewAdminTrash = $isSuperAdmin || in_array('admins.delete', $permissions);
+
+        abort_unless(
+            $canViewOrganizationTrash || $canViewRoleTrash || $canViewAdminTrash,
+            403
+        );
+
+        $organizations = $canViewOrganizationTrash
+            ? \App\Models\Organization::onlyTrashed()
+                ->latest('deleted_at')
+                ->get()
+            : collect();
+
+        $roles = $canViewRoleTrash
+            ? \App\Models\Role::onlyTrashed()
+                ->latest('deleted_at')
+                ->get()
+            : collect();
+
+        $admins = $canViewAdminTrash
+            ? \App\Models\Admin::onlyTrashed()
+                ->latest('deleted_at')
+                ->get()
+            : collect();
+
+        return view('admin.trash.index', compact(
+            'organizations',
+            'roles',
+            'admins',
+            'canViewOrganizationTrash',
+            'canViewRoleTrash',
+            'canViewAdminTrash'
+        ));
+
+    })->middleware(['auth:superadmin', '2fa'])
+        ->name('trash.index');
+
+
+    // Organization Management
     Route::prefix('organizations')
         ->name('organizations.')
-        ->middleware(['auth', '2fa'])
+        ->middleware(['auth:superadmin', '2fa'])
         ->group(function () {
 
             Route::get('/', [OrganizationController::class, 'index'])
@@ -260,16 +278,17 @@ Route::get('/trash', function (\Illuminate\Http\Request $request) {
                 ->middleware('permission:organizations.delete')
                 ->name('destroy');
 
-                Route::get('/{organization}', [OrganizationController::class, 'show'])
-    ->middleware('permission:organizations.view')
-    ->name('show');
+            Route::get('/{organization}', [OrganizationController::class, 'show'])
+                ->middleware('permission:organizations.view')
+                ->name('show');
+
         });
 
 
     // Role Management
     Route::prefix('roles')
         ->name('roles.')
-        ->middleware(['auth', '2fa'])
+        ->middleware(['auth:superadmin', '2fa'])
         ->group(function () {
 
             Route::get('/', [RoleController::class, 'index'])
@@ -303,13 +322,14 @@ Route::get('/trash', function (\Illuminate\Http\Request $request) {
             Route::delete('/{role}', [RoleController::class, 'destroy'])
                 ->middleware('permission:roles.delete')
                 ->name('destroy');
+
         });
 
 
     // Admin Management
     Route::prefix('admins')
         ->name('admins.')
-        ->middleware(['auth', '2fa'])
+        ->middleware(['auth:superadmin', '2fa'])
         ->group(function () {
 
             Route::get('/', [AdminController::class, 'index'])
@@ -343,12 +363,13 @@ Route::get('/trash', function (\Illuminate\Http\Request $request) {
             Route::delete('/{admin}', [AdminController::class, 'destroy'])
                 ->middleware('permission:admins.delete')
                 ->name('destroy');
+
         });
 
 });
 
 
-// Multiple Account Switcher
+// Multiple Account Switcher (Web Guard)
 Route::middleware('auth')->group(function () {
 
     Route::post('/accounts/add', [AccountSwitcherController::class, 'addAccount'])
@@ -361,5 +382,6 @@ Route::middleware('auth')->group(function () {
         ->name('accounts.remove');
 
 });
+
 
 require __DIR__.'/auth.php';

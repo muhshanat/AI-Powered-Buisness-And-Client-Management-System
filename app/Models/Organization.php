@@ -34,4 +34,10 @@ class Organization extends Model
     {
         return $this->users()->wherePivot('is_active', true);
     }
+
+    // Organization products
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

@@ -18,14 +18,14 @@ class AuthenticatedSessionController extends Controller
     }
 
     // Handle organization login
-    public function store(LoginRequest $request): RedirectResponse
-    {
-        $request->authenticate();
+   public function store(LoginRequest $request): RedirectResponse
+{
+    $request->authenticate();
 
-        $request->session()->regenerate();
+    $request->session()->regenerate();
 
-        return redirect()->route('organization.dashboard');
-    }
+    return redirect()->route('organization.dashboard');
+}
 
     // Logout organization account only
     public function destroy(Request $request): RedirectResponse

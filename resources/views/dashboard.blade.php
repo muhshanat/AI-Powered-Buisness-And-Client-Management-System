@@ -2,7 +2,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            organization Dashboard
+            Organization Dashboard
         </h2>
     </x-slot>
 
@@ -11,11 +11,15 @@
 
             <div style="margin-bottom: 25px;">
                 <h1 style="font-size: 28px; font-weight: bold; color: #1e293b;">
-                    Welcome, {{ Auth::user()->name }}!
+                    Welcome, {{ auth('organization')->user()->name }}!
                 </h1>
 
                 <p style="color: #64748b; margin-top: 8px;">
                     Welcome to your organization dashboard.
+                </p>
+
+                <p style="color: #334155; margin-top: 8px;">
+                    <strong>Organization:</strong> {{ $organization->name }}
                 </p>
             </div>
 
@@ -31,11 +35,13 @@
                     </p>
 
                     <p style="color: #334155;">
-                        <strong>Name:</strong> {{ Auth::user()->name }}
+                        <strong>Name:</strong>
+                        {{ auth('organization')->user()->name }}
                     </p>
 
                     <p style="color: #334155; margin-top: 5px;">
-                        <strong>Email:</strong> {{ Auth::user()->email }}
+                        <strong>Email:</strong>
+                        {{ auth('organization')->user()->email }}
                     </p>
                 </div>
 
@@ -45,11 +51,11 @@
                     </h3>
 
                     <p style="color: #64748b; margin: 12px 0;">
-                        Your account is active.
+                        Your organization is approved.
                     </p>
 
                     <span style="display: inline-block; background: #dcfce7; color: #166534; padding: 6px 12px; border-radius: 20px; font-size: 13px;">
-                        Active
+                        Approved
                     </span>
                 </div>
 
