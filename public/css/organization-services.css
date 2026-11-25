@@ -1,0 +1,255 @@
+
+/* Service Management */
+
+.content-card {
+    background: #ffffff;
+    padding: 28px;
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(30, 70, 110, 0.06);
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.page-header h2 {
+    color: #243b53;
+    margin: 0 0 7px;
+}
+
+.page-header p {
+    color: #718096;
+    margin: 0;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 17px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: #3287d8;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background: #236db5;
+}
+
+.product-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.product-table th,
+.product-table td {
+    padding: 15px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e8eef5;
+}
+
+.product-table th {
+    background: #f5f8fc;
+    color: #405b78;
+    font-size: 13px;
+}
+
+.product-table td {
+    color: #405064;
+    font-size: 14px;
+}
+
+.status-badge {
+    padding: 6px 11px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: #e3f8eb;
+    color: #20834b;
+}
+
+.status-badge.inactive {
+    background: #fff0e6;
+    color: #c56a28;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-buttons form {
+    margin: 0;
+}
+
+.btn-edit {
+    background: #e5f1ff;
+    color: #2877bd;
+}
+
+.btn-delete {
+    background: #ffe9e9;
+    color: #d64545;
+}
+
+.success-alert {
+    padding: 13px 16px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    background: #e5f8ec;
+    color: #237744;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 55px 20px;
+}
+
+.empty-state h3 {
+    color: #243b53;
+}
+
+.empty-state p {
+    color: #718096;
+    margin-bottom: 22px;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.pagination-wrapper {
+    margin-top: 22px;
+}
+
+@media (max-width: 700px) {
+    .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .content-card {
+        padding: 18px;
+    }
+}
+
+
+/* Add and Edit Service Forms */
+
+.service-form-card {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.service-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 25px;
+}
+
+.service-form-grid .full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    color: #405b78;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d5e0eb;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #34495e;
+    font-size: 14px;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #3287d8;
+    box-shadow: 0 0 0 3px rgba(50, 135, 216, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+.form-group small {
+    color: #718096;
+    margin-top: 7px;
+}
+
+.service-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.btn-secondary {
+    background: #edf3f9;
+    color: #405b78;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    background: #dce9f5;
+}
+
+.error-alert {
+    background: #fff0f0;
+    color: #c0392b;
+    border: 1px solid #f5cccc;
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+}
+
+.error-alert ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+@media (max-width: 650px) {
+    .service-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .service-form-grid .full-width {
+        grid-column: auto;
+    }
+
+    .service-form-actions {
+        flex-wrap: wrap;
+    }
+}

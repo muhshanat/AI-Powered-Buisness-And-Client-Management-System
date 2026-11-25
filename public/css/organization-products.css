@@ -1,0 +1,232 @@
+
+/* =================================
+   TANOVAFLOW - PRODUCT MANAGEMENT
+================================= */
+
+.content-card {
+    background: #ffffff;
+    border: 1px solid #cbdbea;
+    border-radius: 13px;
+    padding: 28px;
+    box-shadow: 0 4px 12px rgba(30, 65, 100, 0.07);
+}
+
+.content-card h2 {
+    color: #153b60;
+    font-size: 21px;
+    margin-bottom: 8px;
+}
+
+.content-card p {
+    color: #71869d;
+    font-size: 14px;
+}
+
+/* Buttons */
+
+.btn {
+    display: inline-block;
+    padding: 11px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-primary {
+    background: #3287d8;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background: #1769b0;
+}
+
+/* Product Table */
+
+.content-card table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.content-card th {
+    background: #f0f6fc;
+    color: #405b78;
+    font-size: 13px;
+    text-align: left;
+    padding: 15px;
+    border-bottom: 1px solid #dce5ef;
+}
+
+.content-card td {
+    padding: 15px;
+    border-bottom: 1px solid #edf1f6;
+    color: #405b78;
+    font-size: 13px;
+}
+
+.content-card tbody tr:hover {
+    background: #f8fbff;
+}
+
+.content-card td a {
+    color: #287bd1;
+    text-decoration: none;
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+.content-card td button {
+    background: #fff0f0;
+    color: #d94e55;
+    border: none;
+    padding: 7px 11px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Success Message */
+
+.alert-success {
+    background: #e8f7ee;
+    color: #267345;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+/* Form Fields */
+
+.form-group {
+    margin-top: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: #405b78;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #cbdbea;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #153451;
+    background: #ffffff;
+    outline: none;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #3287d8;
+    box-shadow: 0 0 0 3px rgba(50, 135, 216, 0.12);
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+.form-group input[type="file"] {
+    background: #f8fbff;
+}
+
+/* Validation Errors */
+
+.alert-danger {
+    background: #fff0f0;
+    color: #c03945;
+    padding: 14px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.alert-danger ul {
+    padding-left: 20px;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+    .content-card {
+        padding: 18px;
+    }
+
+    .content-card th,
+    .content-card td {
+        padding: 10px;
+        font-size: 12px;
+    }
+}
+
+
+/* =================================
+   ADD / EDIT PRODUCT FORM
+================================= */
+
+.product-form-card {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.product-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 25px;
+}
+
+.product-form-grid .full-width {
+    grid-column: 1 / -1;
+}
+
+.product-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.product-form-actions .btn {
+    min-width: 130px;
+    text-align: center;
+}
+
+.btn-secondary {
+    background: #edf3f9;
+    color: #405b78;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    background: #dce9f5;
+}
+
+.product-image-input {
+    background: #f8fbff;
+    border: 1px dashed #9dbbd8 !important;
+    padding: 18px !important;
+}
+
+@media (max-width: 650px) {
+    .product-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .product-form-grid .full-width {
+        grid-column: auto;
+    }
+
+    .product-form-actions {
+        flex-wrap: wrap;
+    }
+}

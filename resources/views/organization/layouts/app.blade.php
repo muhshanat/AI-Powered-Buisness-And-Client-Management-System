@@ -278,14 +278,43 @@
             <div class="org-nav-label">BUSINESS MANAGEMENT</div>
 
             <a href="#"><span>♙</span><span>Staff Management</span></a>
-            <a href="#"><span>▣</span><span>Products</span></a>
-            <a href="#"><span>◇</span><span>Services</span></a>
-            <a href="#"><span>🛒</span><span>Orders</span></a>
-            <a href="#"><span>▦</span><span>Appointments</span></a>
+           
+
+            <a href="{{ route('organization.website-connection.index') }}"
+   class="{{ request()->routeIs('organization.website-connection.*') || request()->routeIs('organization.products.*') ? 'active' : '' }}">
+    <span>▣</span>
+    <span>Products</span>
+</a>
+
+            <a href="{{ route('organization.services.index') }}"
+   class="{{ request()->routeIs('organization.services.*') ? 'active' : '' }}">
+    <span>◇</span>
+    <span>Services</span>
+</a>
+
+<a href="{{ route('organization.orders.index') }}"
+   class="{{ request()->routeIs('organization.orders.*') ? 'active' : '' }}">
+    <span>🛒</span>
+    <span>Orders</span>
+</a>
+            
+<a href="{{ route('organization.appointments.index') }}"
+   class="{{ request()->routeIs('organization.appointments.*') ? 'active' : '' }}">
+    <span>▦</span>
+    <span>Appointments</span>
+</a>
+            
 
             <div class="org-nav-label">COMMUNICATION</div>
 
-            <a href="#"><span>✉</span><span>Conversations</span></a>
+            <a href="{{ route('organization.conversations.index') }}"
+   class="{{ request()->routeIs('organization.conversations.*') ? 'active' : '' }}">
+    <span>✉</span>
+    <span>Conversations</span>
+</a>
+
+           
+
             <a href="#"><span>✧</span><span>AI Assistant</span></a>
 
             <div class="org-nav-label">SETTINGS</div>
